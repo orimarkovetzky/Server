@@ -1,4 +1,4 @@
-﻿using FlowServer.DAL;
+﻿using FlowServer.DBServices;
 
 namespace FlowServer.Models
 {
@@ -7,7 +7,7 @@ namespace FlowServer.Models
         public int MachineId { get; set; }
         public string MachineName { get; set; }
         public int MachineType { get; set; }
-        public float SetupTime { get; set; }
+        public double SetupTime { get; set; }
         public int Status { get; set; }
 
 
@@ -35,6 +35,12 @@ namespace FlowServer.Models
         {
             MachineDBServices dbs = new MachineDBServices();
             dbs.ChangeMachineStatus(machineId, newStatus);
+        }
+
+        public static Machine FindMachine(int machineId)
+        {
+            MachineDBServices dbs = new MachineDBServices();
+            return dbs.findMachine(machineId);
         }
     }
 }

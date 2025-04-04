@@ -1,4 +1,4 @@
-﻿using FlowServer.DAL;
+﻿
 
 namespace FlowServer.Models
 {
@@ -13,7 +13,7 @@ namespace FlowServer.Models
             Status = status;
         }
 
-        public Batch() { } // defualt constructor 
+        public Batch() { } // default constructor 
         public static Batch FindBatch(int batchid)
         {
             BatchDBServices dbs = new BatchDBServices();

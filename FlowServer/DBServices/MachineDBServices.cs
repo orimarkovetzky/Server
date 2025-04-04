@@ -8,10 +8,9 @@ using System.Text;
 using System.Security.Cryptography;
 using System.Xml.Linq;
 using FlowServer.Models;
-using FlowServer.DAL;
-namespace FlowServer.DAL
-{
 
+namespace FlowServer.DBServices
+{
     public class MachineDBServices
 
     {
@@ -140,5 +139,47 @@ namespace FlowServer.DAL
         {
 
         }
+
+        public Machine findMachine(int machineId)
+        {
+
+            SqlConnection con = null;
+            try
+            {
+                con = connect("igroup16_test1");
+                string selectSTR = $"SELECT * FROM Machines WHERE machineId = @MachineID";
+                var paramDic = new Dictionary<string, object> { { "@MachineID", machineId } };
+
+                SqlCommand cmd = CreateCommandWithTextQuery(selectSTR, con, paramDic);
+                SqlDataReader rdr = cmd.ExecuteReader();
+
+                if (rdr.Read())
+                {
+                    return new Machine()
+                    {
+                        MachineId = Convert.ToInt32(rdr["MachineID"]),
+                        MachineType = Convert.ToInt32(rdr["MachineType"]),
+                        MachineName = rdr["MachineName"].ToString(),
+                        SetupTime = Convert.ToDouble(rdr["SetupTime"]),
+                        Status = Convert.ToInt32(rdr["status"])
+                    };
+                }
+
+                return null; // Not found
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                if (con != null)
+                {
+                    con.Close();
+                }
+            }
+
+        }
+
     }
 }

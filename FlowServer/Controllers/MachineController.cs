@@ -12,6 +12,17 @@ namespace FlowServer.Controllers
             return Machine.ReadMachines();
         }
 
+        [HttpGet("{machineId}")]
+        public ActionResult<Machine> Get(int machineId)
+        {
+            var machine = Machine.FindMachine(machineId);
+
+            if (machine == null)
+                return NotFound($"Batch with ID {machineId} not found.");
+
+            return Ok(machine);
+        }
+
         [HttpPut("{id}/status")]
         public IActionResult UpdateMachineStatus(int id, [FromBody] int newStatus)
         {
