@@ -21,7 +21,7 @@ namespace FlowServer.DAL
             // read the connection string from the configuration file
             IConfigurationRoot configuration = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json").Build();
-            string cStr = configuration.GetConnectionString("igroup16_test2");
+            string cStr = configuration.GetConnectionString("DefaultConnection");
             SqlConnection con = new SqlConnection(cStr);
             con.Open();
             return
