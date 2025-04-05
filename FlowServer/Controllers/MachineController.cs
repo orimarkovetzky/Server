@@ -23,11 +23,15 @@ namespace FlowServer.Controllers
             return Ok(machine);
         }
 
-        [HttpPut("{id}/status")]
-        public IActionResult UpdateMachineStatus(int id, [FromBody] int newStatus)
+        [HttpPut("{id}/{status}")]
+        public ActionResult UpdateMachineStatus(int id, int status)
         {
-            Machine.ChangeMachineStatus(id, newStatus);
-            return Ok();
+           int result = Machine.UpdateMachineStatus(id, status);
+
+            if (result > 0)
+                return Ok($"Machine {id} status updated to '{status}'");
+            else
+                return NotFound($"Machine with ID {id} not found.");
         }
     }
 }

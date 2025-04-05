@@ -18,13 +18,13 @@ namespace FlowServer.Controllers
             return Ok(batch);
         }
 
-        [HttpPut("{id}/status")]
-        public ActionResult UpdateBatchStatus(int id, [FromBody] string newStatus)
+        [HttpPut("{id}/{status}")]
+        public ActionResult UpdateBatchStatus(int id, string status)
         {
-            int result = Batch.UpdateBatchStatus(id, newStatus);
+            int result = Batch.UpdateBatchStatus(id, status);
 
             if (result > 0)
-                return Ok($"Batch {id} status updated to '{newStatus}'");
+                return Ok($"Batch {id} status updated to '{status}'");
             else
                 return NotFound($"Batch with ID {id} not found.");
         }

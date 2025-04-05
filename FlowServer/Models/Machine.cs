@@ -31,10 +31,10 @@ namespace FlowServer.Models
             return dbs.ReadMachines();
         }
 
-        public static void ChangeMachineStatus(int machineId, int newStatus)
+        public static int UpdateMachineStatus(int machineId, int newStatus)
         {
             MachineDBServices dbs = new MachineDBServices();
-            dbs.ChangeMachineStatus(machineId, newStatus);
+           return dbs.UpdateMachineStatus(machineId, newStatus);
         }
 
         public static Machine FindMachine(int machineId)

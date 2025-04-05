@@ -110,29 +110,35 @@ namespace FlowServer.DBServices
             }
         }
 
-        public void ChangeMachineStatus(int machineId, int newStatus)
+        public int UpdateMachineStatus(int machineId, int newStatus)
         {
-            //SqlConnection con = connect("igroup16_test1");
+            SqlConnection con = null;
+            try
+            {
+                con = connect("igroup16_test1");
+                string updateStr = "UPDATE Machines SET status = @status WHERE machineId = @id";
 
-            //try
-            //{
-            //    var cmd = new SqlCommand("UPDATE Machines SET Status = @status WHERE MachineId = @id", con);
-            //    cmd.Parameters.AddWithValue("@id", machineId);
-            //    cmd.Parameters.AddWithValue("@status", newStatus);
-            //    con.Open();
-            //    cmd.ExecuteNonQuery();
-            //}
-            //catch (Exception ex)
-            //{
-            //    throw ex;
-            //}
-            //finally
-            //{
-            //    if (con != null)
-            //    {
-            //        con.Close();
-            //    }
-            //}
+                Dictionary<string, object> paramDic = new Dictionary<string, object>
+        {
+            { "@status", newStatus },
+            { "@id", machineId }
+        };
+
+                SqlCommand cmd = CreateCommandWithTextQuery(updateStr, con, paramDic);
+                int rowsAffected = cmd.ExecuteNonQuery();
+                return rowsAffected;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                if (con != null)
+                {
+                    con.Close();
+                }
+            }
         }
 
         public MachineDBServices()
