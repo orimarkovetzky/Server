@@ -22,6 +22,15 @@ namespace FlowServer.Models
             this.status = status;
         }
 
+        public Task(Batch batch, Machine machine, DateTime estStartTime, DateTime estEndTime,string status)
+        {
+            this.batch = batch;
+            this.machine = machine;
+            this.estStartTime = estStartTime;
+            this.estEndTime = estEndTime;
+            this.status = status;
+        }
+
         public Task() { }
 
         public static List<Task> ReadTasks()
