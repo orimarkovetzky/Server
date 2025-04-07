@@ -5,7 +5,7 @@ using FlowServer.DBServices;
 using Task = FlowServer.Models.Task;
 
 
-
+namespace FlowServer.DBServices { 
     public class TaskDBServices
     {
         public SqlConnection connect(String conString)
@@ -66,29 +66,36 @@ using Task = FlowServer.Models.Task;
             return cmd;
         }
 
-        public List<Task> ReadTasks()
+    public int ChangeTaskStatus(int batchId, int machineId, string status)
+    {
+        SqlConnection con = null;
+        try
         {
-            SqlConnection con = connect("DefaultConnection");
-            SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("spReadTasks", con, null);
-            SqlDataReader reader = cmd.ExecuteReader();
-            List<Task> tasks = new List<Task>();
-            while (reader.Read())
-            {
-                Task task = new Task
+            con = connect("igroup16_test1");
+            string sqlQuery = "UPDATE MachineBatch SET status=@status WHERE batchId=@batchId and machineId=@machineId";
+            Dictionary<string, object> paramDic = new Dictionary<string, object>
                 {
-                    batch = Batch.FindBatch((int)reader["batchId"]),
-                    machine = Machine.FindMachine((int)reader["machineId"]),
-                    estStartTime = (DateTime)reader["estStartTime"],
-                    estEndTime = (DateTime)reader["estEndTime"],
-                    actStartTime = (DateTime)reader["actStartTime"],
-                    actEndTime = (DateTime)reader["actEndTime"],
-                    status = reader["status"].ToString()
+                    { "@batchId", batchId },
+                    {"@machineId",machineId },
+                    { "@status", status }
                 };
-                tasks.Add(task);
+
+            using (SqlCommand cmd = CreateCommandWithTextQuery(sqlQuery, con, paramDic))
+            {
+                return cmd.ExecuteNonQuery();
             }
-            reader.Close();
-            con.Close();
-            return tasks;
+        }
+        catch (Exception ex)
+        {
+            throw ex;
+        }
+        finally
+        {
+            if (con != null)
+            {
+                con.Close();
+            }
         }
     }
-
+}
+}

@@ -33,10 +33,10 @@ namespace FlowServer.Models
 
         public Task() { }
 
-        public static List<Task> ReadTasks()
+        public static int UpdateTaskStatus(int batchId,int machineId, string newStatus)
         {
             TaskDBServices dbs = new TaskDBServices();
-            return dbs.ReadTasks();
+            return dbs.ChangeTaskStatus(batchId,machineId, newStatus);
         }
     }
 }
