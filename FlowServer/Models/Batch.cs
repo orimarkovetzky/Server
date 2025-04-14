@@ -11,6 +11,7 @@ namespace FlowServer.Models
             ProductId = productId;
             Quantity = quantity;
             Status = status;
+            
         }
 
         public Batch() { } // default constructor 
