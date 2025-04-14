@@ -3,6 +3,7 @@ using FlowServer.Models;
 using Microsoft.AspNetCore.Mvc;
 using FlowServer.DBServices;
 
+
 [Route("api/[controller]")]
 [ApiController]
 public class UsersController : ControllerBase
@@ -16,5 +17,21 @@ public class UsersController : ControllerBase
             return Ok(users);
         else
             return NotFound("No users found.");
+    }
+
+
+    [HttpPost]
+    public IActionResult Post(string name, bool isManager, string password)
+    {
+        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(password))
+            return BadRequest("Name or Password missing.");
+
+        var userRequest = new User(name, isManager, password);
+
+        UserDBServices db = new UserDBServices();
+        int newId = db.CreateUser(userRequest);
+        userRequest.Id = newId;
+
+        return Ok(userRequest);
     }
 }
