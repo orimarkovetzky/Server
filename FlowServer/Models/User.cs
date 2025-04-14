@@ -1,5 +1,6 @@
 ﻿using FlowServer.DBServices;
 using System.Text.Json.Serialization;
+using System.Xml.Linq;
 
 namespace FlowServer.Models
 {
@@ -21,18 +22,32 @@ namespace FlowServer.Models
         public int Id { get => id; set => id = value; }
         public string Name { get => name; set => name = value; }
         public string Email { get => email; set => email = value; }
+
+        public bool IsManager { get; set; } = false;
         public string Password { get => password; set => password = value; }
 
         public User()
         {
 
         }
-        public User(string name, string email, string password)
+        public User(string name, string email,bool isManager ,string password)
         {
             Name = string.IsNullOrWhiteSpace(name) ? "" : name;
             Email = email;
+            IsManager = isManager;
             Password = password;
+
         }
+
+        public User(string name, bool isManager, string password)
+        {
+            
+            Name =  name;
+            IsManager = isManager;
+            Password =  password;
+
+        }
+
 
         public bool Login(string email, string password)
         {
