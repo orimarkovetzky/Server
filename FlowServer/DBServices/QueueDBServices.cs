@@ -110,5 +110,54 @@ namespace FlowServer.DBServices
                 }
             }
         }
+        public List<Batch> GetBatchesByStatus(string status)
+        {
+            SqlConnection con = null;
+            try
+            {
+                con = connect("igroup16_test1");
+
+                Dictionary<string, object> paramDic = new Dictionary<string, object>
+        {
+            { "@Status", status }
+        };
+
+                using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("GetBatchesByStatus", con, paramDic))
+                {
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        List<Batch> batches = new List<Batch>();
+
+                        while (reader.Read())
+                        {
+                            Batch batch = new Batch
+                            {
+                                BatchId = reader.GetInt32(reader.GetOrdinal("batchId")),
+                                OrderId = reader.GetInt32(reader.GetOrdinal("orderId")),
+                                ProductId = reader.GetInt32(reader.GetOrdinal("productId")),
+                                Quantity = reader.GetInt32(reader.GetOrdinal("quantity")),
+                                Status = reader.GetString(reader.GetOrdinal("status"))
+                            };
+
+                            batches.Add(batch);
+                        }
+
+                        return batches;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                if (con != null)
+                    con.Close();
+            }
+        }
+
     }
+
+
 }

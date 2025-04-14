@@ -79,10 +79,13 @@ public class BatchDBServices
         try
         {
             con = connect("igroup16_test1");
-            string selectSTR = $"SELECT * FROM Batches WHERE batchID = @batchId";
-            var paramDic = new Dictionary<string, object> { { "@batchId", BatchId } };
 
-            SqlCommand cmd = CreateCommandWithTextQuery(selectSTR, con, paramDic);
+            var paramDic = new Dictionary<string, object>
+        {
+            { "@BatchId", BatchId }
+        };
+
+            SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("GetBatchById", con, paramDic);
             SqlDataReader rdr = cmd.ExecuteReader();
 
             if (rdr.Read())

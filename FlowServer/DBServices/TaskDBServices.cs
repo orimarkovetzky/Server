@@ -5,7 +5,8 @@ using FlowServer.DBServices;
 using Task = FlowServer.Models.Task;
 
 
-namespace FlowServer.DBServices { 
+namespace FlowServer.DBServices
+{
     public class TaskDBServices
     {
         public SqlConnection connect(String conString)
@@ -66,36 +67,80 @@ namespace FlowServer.DBServices {
             return cmd;
         }
 
-    public int ChangeTaskStatus(int batchId, int machineId, string status)
-    {
-        SqlConnection con = null;
-        try
+        public int ChangeTaskStatus(int batchId, int machineId, string status)
         {
-            con = connect("igroup16_test1");
-            string sqlQuery = "UPDATE MachineBatch SET status=@status WHERE batchId=@batchId and machineId=@machineId";
-            Dictionary<string, object> paramDic = new Dictionary<string, object>
+            SqlConnection con = null;
+            try
+            {
+                con = connect("igroup16_test1");
+                string sqlQuery = "UPDATE MachineBatch SET status=@status WHERE batchId=@batchId and machineId=@machineId";
+                Dictionary<string, object> paramDic = new Dictionary<string, object>
                 {
                     { "@batchId", batchId },
                     {"@machineId",machineId },
                     { "@status", status }
                 };
 
-            using (SqlCommand cmd = CreateCommandWithTextQuery(sqlQuery, con, paramDic))
+                using (SqlCommand cmd = CreateCommandWithTextQuery(sqlQuery, con, paramDic))
+                {
+                    return cmd.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
             {
-                return cmd.ExecuteNonQuery();
+                throw ex;
+            }
+            finally
+            {
+                if (con != null)
+                {
+                    con.Close();
+                }
             }
         }
-        catch (Exception ex)
+        public List<Task> GetTasksByBatchId(int batchId)
         {
-            throw ex;
-        }
-        finally
-        {
-            if (con != null)
+            SqlConnection con = null;
+            try
             {
-                con.Close();
+                con = connect("igroup16_test1");
+
+                Dictionary<string, object> paramDic = new Dictionary<string, object>
+        {
+            { "@BatchId", batchId }
+        };
+
+                using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("GetTasksByBatchId", con, paramDic))
+                {
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        List<Task> tasks = new List<Task>();
+
+                        while (reader.Read())
+                        {
+                            Batch batch = Batch.FindBatch(reader.GetInt32(reader.GetOrdinal("batchId")));
+                            Machine machine = Machine.FindMachine(reader.GetInt32(reader.GetOrdinal("machineId")));
+                            DateTime estStartTime = reader.GetDateTime(reader.GetOrdinal("startTimeEst"));
+                            DateTime estEndTime = reader.GetDateTime(reader.GetOrdinal("endTimeEst"));
+                            string status = reader.GetString(reader.GetOrdinal("status"));
+
+                            Task task = new Task(batch, machine, estStartTime, estEndTime, status);
+                            tasks.Add(task);
+                        }
+
+                        return tasks;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                if (con != null)
+                    con.Close();
             }
         }
     }
-}
 }
