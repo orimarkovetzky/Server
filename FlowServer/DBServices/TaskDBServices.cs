@@ -97,5 +97,40 @@ namespace FlowServer.DBServices {
             }
         }
     }
-}
+
+        public int ScheduleTask(int batchId, int machineId, DateTime startTimeEst, DateTime endTimeEst)
+        {
+            SqlConnection con = null;
+            try
+            {
+                con = connect("igroup16_test1");
+                string sqlQuery = "UPDATE MachineBatch SET startTimeEst=@startTimeEst, endTimeEst=@endTimeEst WHERE batchId=@batchId and machineId=@machineId";
+                Dictionary<string, object> paramDic = new Dictionary<string, object>
+                {
+                    { "@batchId", batchId },
+                    { "@machineId", machineId },
+                    { "@startTimeEst", startTimeEst },
+                    { "@endTimeEst", endTimeEst }
+                };
+
+                using (SqlCommand cmd = CreateCommandWithTextQuery(sqlQuery, con, paramDic))
+                {
+                    return cmd.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                if (con != null)
+                {
+                    con.Close();
+                }
+            }
+        }
+
+
+    }
 }
