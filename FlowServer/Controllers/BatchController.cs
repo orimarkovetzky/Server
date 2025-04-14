@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using FlowServer.Models;
+using FlowServer.DBServices;
 namespace FlowServer.Controllers
 {
     [Route("api/[controller]")]
@@ -27,6 +28,25 @@ namespace FlowServer.Controllers
                 return Ok($"Batch {id} status updated to '{status}'");
             else
                 return NotFound($"Batch with ID {id} not found.");
+        }
+
+        [HttpGet("GetTasksByBatchId/{batchId}")]
+        public IActionResult GetTasksByBatchId(int batchId)
+        {
+            try
+            {
+                BatchDBServices dbs = new BatchDBServices();
+                List<dynamic> tasks = dbs.GetTasksByBatchId(batchId);
+
+                if (tasks == null || tasks.Count == 0)
+                    return NotFound($"No tasks found for batch {batchId}");
+
+                return Ok(tasks);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred: " + ex.Message);
+            }
         }
     }
 }

@@ -1,9 +1,7 @@
 {
   "ExpandedNodes": [
-    "",
-    "\\FlowServer",
-    "\\FlowServer\\DBServices"
+    ""
   ],
-  "SelectedNode": "\\FlowServer\\DBServices\\TaskDBServices.cs",
+  "SelectedNode": "\\FlowServer.sln",
   "PreviewInSolutionExplorer": false
 }

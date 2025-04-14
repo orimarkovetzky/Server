@@ -30,7 +30,7 @@ namespace FlowServer.Models
             this.endTimeEst = estEndTime;
             this.status = status;
         }
-
+       
         public Task() { }
 
         public static int UpdateTaskStatus(int batchId,int machineId, string newStatus)
