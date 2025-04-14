@@ -22,24 +22,6 @@ namespace FlowServer.Controllers
                 return NotFound($"Task with ID {taskId} not found.");
         }
 
-        [HttpGet("GetTasksByBatchId/{batchId}")]
-        public IActionResult GetTasksByBatchId(int batchId)
-        {
-            try
-            {
-                TaskDBServices dbs = new TaskDBServices();
-                List<Task> tasks = dbs.GetTasksByBatchId(batchId);
-
-                if (tasks == null || tasks.Count == 0)
-                    return NotFound($"No tasks found for batch {batchId}");
-
-                return Ok(tasks);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "An error occurred: " + ex.Message);
-            }
-        }
     }
 
 }
