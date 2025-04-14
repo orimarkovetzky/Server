@@ -22,6 +22,27 @@ namespace FlowServer.Controllers
                 return NotFound($"Task with ID {taskId} not found.");
         }
 
+        [HttpPut("ScheduleTask")]
+        public IActionResult UpdateStartTimeEst(int batchId, int machineId, DateTime startTimeEst, DateTime endTimeEst)
+        {
+            try
+            {
+                int result = Task.ScheduleTask(batchId, machineId, startTimeEst,endTimeEst);
+                if (result > 0)
+                {
+                    return Ok("Task was scheduled");
+                }
+                else
+                {
+                    return NotFound("Task not found.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
     }
 
 }

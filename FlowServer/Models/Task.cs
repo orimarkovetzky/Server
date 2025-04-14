@@ -5,8 +5,8 @@ namespace FlowServer.Models
     {
         public Batch batch { get; set; }
         public Machine machine { get; set; }
-        public DateTime estStartTime { get; set; }
-        public DateTime estEndTime { get; set; }
+        public DateTime startTimeEst { get; set; }
+        public DateTime endTimeEst { get; set; }
         public DateTime actStartTime { get; set; }
         public DateTime actEndTime { get; set; }
         public string status { get; set; }
@@ -15,8 +15,8 @@ namespace FlowServer.Models
         {
             this.batch = batch;
             this.machine = machine;
-            this.estStartTime = estStartTime;
-            this.estEndTime = estEndTime;
+            this.startTimeEst = estStartTime;
+            this.endTimeEst = estEndTime;
             this.actStartTime = actStartTime;
             this.actEndTime = actEndTime;
             this.status = status;
@@ -26,8 +26,8 @@ namespace FlowServer.Models
         {
             this.batch = batch;
             this.machine = machine;
-            this.estStartTime = estStartTime;
-            this.estEndTime = estEndTime;
+            this.startTimeEst = estStartTime;
+            this.endTimeEst = estEndTime;
             this.status = status;
         }
        
@@ -37,6 +37,12 @@ namespace FlowServer.Models
         {
             TaskDBServices dbs = new TaskDBServices();
             return dbs.ChangeTaskStatus(batchId,machineId, newStatus);
+        }
+
+        public static int ScheduleTask(int batchId, int machineId, DateTime startTimeEst, DateTime endTimeEst)
+        {
+            TaskDBServices dbServices = new TaskDBServices();
+            return dbServices.ScheduleTask(batchId, machineId, startTimeEst, endTimeEst);
         }
     }
 }
