@@ -2,10 +2,11 @@
 using System.Data;
 using FlowServer.Models;
 using FlowServer.DBServices;
-using Task = FlowServer.Models.Task;
+using System.Xml.Linq;
 
 
-namespace FlowServer.DBServices { 
+namespace FlowServer.DBServices
+{
     public class TaskDBServices
     {
         public SqlConnection connect(String conString)
@@ -66,37 +67,38 @@ namespace FlowServer.DBServices {
             return cmd;
         }
 
-    public int ChangeTaskStatus(int batchId, int machineId, string status)
-    {
-        SqlConnection con = null;
-        try
+        public int ChangeTaskStatus(int batchId, int machineId, string status)
         {
-            con = connect("igroup16_test1");
-            string sqlQuery = "UPDATE MachineBatch SET status=@status WHERE batchId=@batchId and machineId=@machineId";
-            Dictionary<string, object> paramDic = new Dictionary<string, object>
+            SqlConnection con = null;
+            try
+            {
+                con = connect("igroup16_test1");
+                string sqlQuery = "UPDATE MachineBatch SET status=@status WHERE batchId=@batchId and machineId=@machineId";
+                Dictionary<string, object> paramDic = new Dictionary<string, object>
                 {
                     { "@batchId", batchId },
                     {"@machineId",machineId },
                     { "@status", status }
                 };
 
-            using (SqlCommand cmd = CreateCommandWithTextQuery(sqlQuery, con, paramDic))
+                using (SqlCommand cmd = CreateCommandWithTextQuery(sqlQuery, con, paramDic))
+                {
+                    return cmd.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
             {
-                return cmd.ExecuteNonQuery();
+                throw ex;
+            }
+            finally
+            {
+                if (con != null)
+                {
+                    con.Close();
+                }
             }
         }
-        catch (Exception ex)
-        {
-            throw ex;
-        }
-        finally
-        {
-            if (con != null)
-            {
-                con.Close();
-            }
-        }
-    }
+       
 
         public int ScheduleTask(int batchId, int machineId, DateTime startTimeEst, DateTime endTimeEst)
         {
@@ -131,6 +133,36 @@ namespace FlowServer.DBServices {
             }
         }
 
+        public int CreateTask(int batchId, int machineId, int userId)
+        {
+            SqlConnection con = null;
+            try
+            {
+                con = connect("igroup16_test1");
+                string sqlQuery = "INSERT INTO MachineBatch (batchId, machineId, userId,status) VALUES (@batchId, @machineId, @userId,'Pending')";
+                Dictionary<string, object> paramDic = new Dictionary<string, object>
+                {
+                    { "@batchId", batchId },
+                    { "@machineId", machineId },
+                    { "@userId", userId }
+                };
+                using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("SPCreateTask", con, paramDic))
+                {
+                    return cmd.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                if (con != null)
+                {
+                    con.Close();
+                }
+            }
+        }
 
     }
 }

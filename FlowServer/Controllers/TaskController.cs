@@ -1,4 +1,5 @@
-﻿using FlowServer.Models;
+﻿using FlowServer.DBServices;
+using FlowServer.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Task = FlowServer.Models.Task;
@@ -11,9 +12,9 @@ namespace FlowServer.Controllers
     {
 
         [HttpPut("{taskId}/{machineId}/{status}")]
-        public ActionResult UpdateTaskStatus(int taskId,int machineId, string status)
+        public ActionResult UpdateTaskStatus(int taskId, int machineId, string status)
         {
-            int result = Task.UpdateTaskStatus(taskId,machineId, status);
+            int result = Task.UpdateTaskStatus(taskId, machineId, status);
 
             if (result > 0)
                 return Ok($"Task {taskId} status updated to '{status}'");
@@ -42,5 +43,28 @@ namespace FlowServer.Controllers
             }
         }
 
+        [HttpPost("CreateTask")]
+
+        public IActionResult CreateTask(int batchId, int machineId, int userId)
+        {
+            try
+            {
+                int result = Task.CreateTask(batchId, machineId, userId);
+                if (result > 0)
+                {
+                    return Ok("Task was created");
+                }
+                else
+                {
+                    return NotFound("Task not found.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
     }
+
 }

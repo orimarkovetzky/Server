@@ -30,7 +30,7 @@ namespace FlowServer.Models
             this.endTimeEst = estEndTime;
             this.status = status;
         }
-
+       
         public Task() { }
 
         public static int UpdateTaskStatus(int batchId,int machineId, string newStatus)
@@ -39,6 +39,11 @@ namespace FlowServer.Models
             return dbs.ChangeTaskStatus(batchId,machineId, newStatus);
         }
 
+        public static int CreateTask(int batchId, int machineId, int userId)
+        {
+            TaskDBServices dbServices = new TaskDBServices();
+            return dbServices.CreateTask(batchId, machineId, userId);
+        }
         public static int ScheduleTask(int batchId, int machineId, DateTime startTimeEst, DateTime endTimeEst)
         {
             TaskDBServices dbServices = new TaskDBServices();

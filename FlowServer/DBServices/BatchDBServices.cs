@@ -9,6 +9,8 @@ using System.Security.Cryptography;
 using System.Xml.Linq;
 using FlowServer.Models;
 using FlowServer.DBServices;
+using Task = FlowServer.Models.Task;
+using System.Dynamic;
 
 
 public class BatchDBServices
@@ -62,16 +64,66 @@ public class BatchDBServices
         return cmd;
     }
 
-    public Batch FindBatch(int BatchId)
+
+public List<dynamic> GetTasksByBatchId(int batchId)
+{
+    SqlConnection con = null;
+    try
+    {
+        con = connect("igroup16_test1");
+
+        Dictionary<string, object> paramDic = new Dictionary<string, object>
+        {
+            { "@BatchId", batchId }
+        };
+
+        using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("GetTasksByBatchId", con, paramDic))
+        {
+            using (SqlDataReader reader = cmd.ExecuteReader())
+            {
+                var tasks = new List<dynamic>();
+
+                while (reader.Read())
+                {
+                    dynamic task = new ExpandoObject();
+
+                    task.BatchId = reader.GetInt32(reader.GetOrdinal("batchId"));
+                    task.MachineId = reader.GetInt32(reader.GetOrdinal("machineId"));
+                    task.StartTimeEst = reader.GetDateTime(reader.GetOrdinal("startTimeEst"));
+                    task.EndTimeEst = reader.GetDateTime(reader.GetOrdinal("endTimeEst"));
+                    task.Status = reader.GetString(reader.GetOrdinal("status"));
+
+                    tasks.Add(task);
+                }
+
+                return tasks;
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        throw ex;
+    }
+    finally
+    {
+        if (con != null)
+            con.Close();
+    }
+}
+
+public Batch FindBatch(int BatchId)
     {
         SqlConnection con = null;
         try
         {
             con = connect("igroup16_test1");
-            string selectSTR = $"SELECT * FROM Batches WHERE batchID = @batchId";
-            var paramDic = new Dictionary<string, object> { { "@batchId", BatchId } };
 
-            SqlCommand cmd = CreateCommandWithTextQuery(selectSTR, con, paramDic);
+            var paramDic = new Dictionary<string, object>
+        {
+            { "@BatchId", BatchId }
+        };
+
+            SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("GetBatchById", con, paramDic);
             SqlDataReader rdr = cmd.ExecuteReader();
 
             if (rdr.Read())
