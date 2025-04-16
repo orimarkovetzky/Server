@@ -89,6 +89,7 @@ namespace FlowServer.DBServices
                     {
                         MachineId = Convert.ToInt32(rdr["MachineId"]),
                         MachineName = rdr["MachineName"].ToString(),
+                        ImagePath = rdr["imagePath"].ToString(),
                         MachineType = Convert.ToInt32(rdr["MachineType"]),
                         SetupTime = Convert.ToSingle(rdr["SetupTime"]),
                         Status = Convert.ToInt32(rdr["Status"])

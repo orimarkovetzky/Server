@@ -10,5 +10,10 @@ namespace FlowServer.Models
             return dbServices.GetMachineQueue(machineId);
         }
 
+        public static List<Object> GetMachinePageData()
+        {
+           QueueDBServices dbServices = new QueueDBServices();
+            return dbServices.GetMachinePageData();
+        }
     }
 }

@@ -44,5 +44,20 @@ namespace FlowServer.Controllers
             }
         }
 
+        [HttpGet("GetMachinePageData")]
+
+        public IActionResult GetMachinePageData()
+        {
+            try
+            {
+                List<Object> machinePageData = Queue.GetMachinePageData();
+                return Ok(machinePageData);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
     }
     }

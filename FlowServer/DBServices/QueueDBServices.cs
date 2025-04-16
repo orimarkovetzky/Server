@@ -65,17 +65,106 @@ namespace FlowServer.DBServices
             return cmd;
         }
 
-        public List<Task> GetMachineQueue(int machineId)
+        public List<Object> GetMachinePageData() //Returns all machines and their tasks for the machine page
+        {
+            try
+            {
+                // Retrieve all machines
+                List<Machine> machines = Machine.ReadMachines();
+                List<Object> machinePageData = new List<Object>();
+
+                foreach (var machine in machines)
+                {
+                    // Get tasks for the current machine
+                    List<Object> tasks = GetMachineTasks(machine.MachineId);
+
+                    // Create an object with machine details and tasks
+                    var machineData = new
+                    {
+                        MachineId = machine.MachineId,
+                        MachineName = machine.MachineName,
+                        MachineImage= machine.ImagePath,
+                        Tasks = tasks
+                    };
+
+                    machinePageData.Add(machineData);
+                }
+
+                return machinePageData;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error while fetching machine page data", ex);
+            }
+
+
+
+        }
+
+
+        public List<object> GetMachineTasks(int machineId)
+        {
+            SqlConnection con = null;
+            try
+            {
+                con = connect("igroup16_test1");
+                string sqlQuery = "SPGetMachineTasks"; // stored procedure name
+                Dictionary<string, object> paramDic = new Dictionary<string, object>
+        {
+            { "@machineID", machineId }
+        };
+
+                using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral(sqlQuery, con, paramDic))
+                {
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        List<object> tasks = new List<object>();
+                        var counter = 1;
+                        while (reader.Read())
+                        {
+                           
+                            var taskObj = new
+                            {
+                                id = counter++,
+                                name = reader["name"].ToString(),
+                                units = Convert.ToInt32(reader["units"]),
+                                processTime = Convert.ToInt32(reader["processTime"]),
+                                progress = reader["progress"] != DBNull.Value ? float.Parse(reader["progress"].ToString()) : 0f,
+                                inQueue = Convert.ToInt32(reader["inQueue"]) == 1,
+                                type = Convert.ToInt32(reader["type"]),
+                                color = reader["color"].ToString()
+                            };
+
+                            tasks.Add(taskObj);
+                        }
+                        return tasks;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                if (con != null)
+                {
+                    con.Close();
+                }
+            }
+        }
+
+        public List<Task> GetMachineQueue(int id) //Not for use
         {
             {
                 SqlConnection con = null;
                 try
                 {
                     con = connect("igroup16_test1");
-                    string sqlQuery = "select * from MachineBatch where machineId=@machineId and status in ('Pending','Processing') order by status desc, startTimeEst";
+                    string sqlQuery = "select * from MachineBatch where machineId=@machineId and status in ('Pending','Proccesing') order by status desc, startTimeEst";
                     Dictionary<string, object> paramDic = new Dictionary<string, object>
                 {
-                    { "@machineId", machineId }
+                    { "@machineId",id }
                 };
 
                     using (SqlCommand cmd = CreateCommandWithTextQuery(sqlQuery, con, paramDic))
@@ -85,12 +174,18 @@ namespace FlowServer.DBServices
                             List<Task> tasks = new List<Task>();
                             while (reader.Read())
                             {
-                                Batch batch = Batch.FindBatch(reader.GetInt32(reader.GetOrdinal("batchId")));
-                                Machine machine = Machine.FindMachine(reader.GetInt32(reader.GetOrdinal("machineId")));
-                                DateTime estStartTime = reader.GetDateTime(reader.GetOrdinal("startTimeEst"));
-                                DateTime estEndTime = reader.GetDateTime(reader.GetOrdinal("endTimeEst"));
-                                string status = reader.GetString(reader.GetOrdinal("status"));
-                                Task task = new Task(batch, machine, estStartTime, estEndTime, status);
+                                int batchId = Convert.ToInt32(reader["batchId"]);
+                                int machineId = Convert.ToInt32(reader["machineId"]);
+                                  DateTime estStartTime = reader["startTimeEst"] == DBNull.Value 
+                        ? DateTime.MinValue.Date 
+                        : Convert.ToDateTime(reader["startTimeEst"]);
+
+                    DateTime estEndTime = reader["endTimeEst"] == DBNull.Value 
+                        ? DateTime.MinValue.Date 
+                        : Convert.ToDateTime(reader["endTimeEst"]);
+
+                                string status = reader.GetString("status");
+                                Task task = new Task(batchId, machineId,estStartTime, estEndTime, status);
                                 tasks.Add(task);
                             }
                             return tasks;

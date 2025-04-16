@@ -9,13 +9,15 @@ namespace FlowServer.Models
         public int MachineType { get; set; }
         public double SetupTime { get; set; }
         public int Status { get; set; }
+        public string ImagePath { get; set; }
 
 
-        public Machine(int machineId, string machineName, int machineType, float setupTime, int status)
+        public Machine(int machineId, string machineName, int machineType, float setupTime, int status, string imagePath)
         {
             MachineId = machineId;
             MachineName = machineName;
             MachineType = machineType;
+            ImagePath = imagePath;
             SetupTime = setupTime;
             Status = status;
         }

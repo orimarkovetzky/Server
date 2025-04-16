@@ -3,18 +3,18 @@ namespace FlowServer.Models
 {
     public class Task
     {
-        public Batch batch { get; set; }
-        public Machine machine { get; set; }
+        public int batchId { get; set; }
+        public int machineId { get; set; }
         public DateTime startTimeEst { get; set; }
         public DateTime endTimeEst { get; set; }
         public DateTime actStartTime { get; set; }
         public DateTime actEndTime { get; set; }
         public string status { get; set; }
 
-        public Task(Batch batch, Machine machine, DateTime estStartTime, DateTime estEndTime, DateTime actStartTime, DateTime actEndTime, string status)
+        public Task(int batchId, int machineId, DateTime estStartTime, DateTime estEndTime, DateTime actStartTime, DateTime actEndTime, string status)
         {
-            this.batch = batch;
-            this.machine = machine;
+            this.batchId = batchId;
+            this.machineId = machineId;
             this.startTimeEst = estStartTime;
             this.endTimeEst = estEndTime;
             this.actStartTime = actStartTime;
@@ -22,10 +22,10 @@ namespace FlowServer.Models
             this.status = status;
         }
 
-        public Task(Batch batch, Machine machine, DateTime estStartTime, DateTime estEndTime,string status)
+        public Task(int batchId, int machineId, DateTime estStartTime, DateTime estEndTime,string status)
         {
-            this.batch = batch;
-            this.machine = machine;
+            this.batchId = batchId;
+            this.machineId = machineId;
             this.startTimeEst = estStartTime;
             this.endTimeEst = estEndTime;
             this.status = status;
