@@ -187,4 +187,35 @@ public Batch FindBatch(int BatchId)
     public BatchDBServices()
     {
     }
+    public void InsertBatch(Batch batch)
+    {
+        SqlConnection con = null;
+
+        try
+        {
+            con = connect("DefaultConnection");
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>
+        {
+            { "@orderID", batch.OrderId },
+            { "@productID", batch.ProductId },
+            { "@quantity", batch.Quantity },
+            { "@status", batch.Status }
+        };
+
+            SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("InsertBatchToOrder", con, paramDic);
+            cmd.ExecuteNonQuery();
+        }
+        catch (Exception ex)
+        {
+            throw ex;
+        }
+        finally
+        {
+            if (con != null)
+            {
+                con.Close();
+            }
+        }
+    }
 }
