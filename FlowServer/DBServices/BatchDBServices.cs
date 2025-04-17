@@ -200,7 +200,7 @@ public Batch FindBatch(int BatchId)
             { "@orderID", batch.OrderId },
             { "@productID", batch.ProductId },
             { "@quantity", batch.Quantity },
-            { "@status", batch.Status }
+            { "@status", "Pending" }
         };
 
             SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("InsertBatchToOrder", con, paramDic);
