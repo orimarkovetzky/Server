@@ -5,6 +5,7 @@ namespace FlowServer.Models
 {
     public class Task
     {
+        public int id { get; set; } // id of the task
         public int batchId { get; set; }
         public int machineId { get; set; }
         public DateTime startTimeEst { get; set; }

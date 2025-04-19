@@ -72,22 +72,22 @@ namespace FlowServer.DBServices
                 // Retrieve all machines
                 List<Machine> machines = Machine.ReadMachines();
                 List<Object> machinePageData = new List<Object>();
-
                
+
 
                 foreach (var machine in machines)
                 {
                     // Get tasks for the current machine
                     List<Task> tasks = GetMachineTasks(machine.MachineId);
-
+                    int currentTemp = -1000;
+                    int currentNitrogen = -1000;
+                    int nextTemp = -1000;
+                    int nextNitrogen = -1000;
                     if (tasks.Count > 0)
                     {
                         // Fetch current task's settings
                         Task currentTask = tasks[0];
-                        int currentTemp = -1000;
-                        int currentNitrogen = -1000;
-                        int nextTemp = -1000;
-                        int nextNitrogen = -1000;
+                        
                         currentTemp = currentTask.temp;
                         currentNitrogen = currentTask.flow;
                        
@@ -107,6 +107,10 @@ namespace FlowServer.DBServices
                         MachineId = machine.MachineId,
                         MachineName = machine.MachineName,
                         MachineImage= machine.ImagePath,
+                        currentTemp,
+                        currentNitrogen,
+                        nextTemp,
+                        nextNitrogen,
                         Tasks = tasks
                     };
 
@@ -149,7 +153,7 @@ namespace FlowServer.DBServices
                            
                             Task taskObj = new Task
                             {
-                                //id = counter++,
+                                id = counter++,
                                 name = reader["name"].ToString(),
                                 units = Convert.ToInt32(reader["units"]),
                                 processTime = Convert.ToInt32(reader["processTime"]),

@@ -1,7 +1,8 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\FlowServer"
   ],
-  "SelectedNode": "\\FlowServer.sln",
+  "SelectedNode": "\\FlowServer\\FlowServer.sln",
   "PreviewInSolutionExplorer": false
 }
