@@ -4,14 +4,16 @@ namespace FlowServer.Models
 {
     public class Batch
     {
-        public Batch(int batchId, int orderId, int productId, int quantity, string status) //Full constructor 
+        public Batch(int batchId, int orderId, int productId, int quantity, string status, int productType) //Full constructor 
         {
             BatchId = batchId;
             OrderId = orderId;
             ProductId = productId;
             Quantity = quantity;
             Status = status;
-            
+            ProductType = productType; 
+
+
         }
 
         public Batch() { } // default constructor 
@@ -31,7 +33,7 @@ namespace FlowServer.Models
         public int ProductId { get; set; }
         public int Quantity { get; set; }
         public string Status { get; set; } = string.Empty;
-
+        public int ProductType { get; set; } // 0 for O-Ring, 1 for Fingers
 
     }
 

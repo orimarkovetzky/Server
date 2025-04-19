@@ -8,6 +8,7 @@ using System.Text;
 using System.Security.Cryptography;
 using System.Xml.Linq;
 using FlowServer.Models;
+using Task = FlowServer.Models.Task;
 
 namespace FlowServer.DBServices
 {
@@ -107,6 +108,58 @@ namespace FlowServer.DBServices
                 if (con != null)
                 {
                     con.Close();
+                }
+            }
+        }
+
+        public List<Task> GetMachineQueue(int id) 
+        {
+            {
+                SqlConnection con = null;
+                try
+                {
+                    con = connect("igroup16_test1");
+                    string sqlQuery = "select * from MachineBatch where machineId=@machineId and status in ('Pending','Proccesing') order by status desc, startTimeEst";
+                    Dictionary<string, object> paramDic = new Dictionary<string, object>
+                {
+                    { "@machineId",id }
+                };
+
+                    using (SqlCommand cmd = CreateCommandWithTextQuery(sqlQuery, con, paramDic))
+                    {
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            List<Task> tasks = new List<Task>();
+                            while (reader.Read())
+                            {
+                                int batchId = Convert.ToInt32(reader["batchId"]);
+                                int machineId = Convert.ToInt32(reader["machineId"]);
+                                DateTime estStartTime = reader["startTimeEst"] == DBNull.Value
+                      ? DateTime.MinValue.Date
+                      : Convert.ToDateTime(reader["startTimeEst"]);
+
+                                DateTime estEndTime = reader["endTimeEst"] == DBNull.Value
+                                    ? DateTime.MinValue.Date
+                                    : Convert.ToDateTime(reader["endTimeEst"]);
+
+                                string status = reader.GetString("status");
+                                Task task = new Task(batchId, machineId, estStartTime, estEndTime, status);
+                                tasks.Add(task);
+                            }
+                            return tasks;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+                finally
+                {
+                    if (con != null)
+                    {
+                        con.Close();
+                    }
                 }
             }
         }

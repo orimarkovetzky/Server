@@ -4,30 +4,55 @@ namespace FlowServer.Models
 {
     public class TaskAssigner
     {
-        public static void AssignBatchToQueues(Batch batch)
+        public static void AssignBatchToQueues(Batch batch,int userId)
         {
-            //List<Machine> machines = Machine.ReadMachines(); // Assuming a method to read all machines
+            TaskDBServices taskService = new TaskDBServices();
 
-            //// Get the sequence of machine types based on the product type
-            //List<int> machineSequence = GetMachineSequence(batch.ProductType);
+            // Step 1: Get the machine sequence for the product
+            List<int> machineSequence = GetMachineSequence(batch.ProductType);
 
-            //foreach (var machineType in machineSequence)
-            //{
-            //    Machine machine = FindBestMachine(machines, machineType);
-            //    if (machine != null)
-            //    {
-            //        DateTime startTimeEst = DateTime.Now; // Placeholder for actual start time estimation logic
-            //        DateTime endTimeEst = startTimeEst.AddHours(1); // Placeholder for actual end time estimation logic
+            DateTime currentBatchTime = DateTime.Now;
 
-            //        TaskDBServices dbServices = new TaskDBServices();
-            //        dbServices.ScheduleTask(batch.BatchId, machine.MachineId, startTimeEst, endTimeEst);
+            foreach (int machineType in machineSequence)
+            {
+                // Step 2: Get available queues for the current machine type
+                Dictionary<int, List<Task>> machineQueues = GetQueuesByMachineType(machineType);
 
-            //        // Update machine status or other relevant properties
-            //        machine.Status = 1; // Assuming 1 means the machine is now busy
-            //    }
-            //}
+                // Step 3: Find the best machine (available soonest)
+                int bestMachineId = FindBestMachine(machineQueues);
+
+                if (bestMachineId == -1)
+                {
+                    // No available machine found
+                    throw new Exception($"No available machine found for machine type {machineType}");
+                }
+
+                // Step 4: Find when the machine is free
+                List<Task> bestMachineTasks = machineQueues[bestMachineId];
+                DateTime machineAvailableTime;
+
+                if (bestMachineTasks.Count == 0)
+                {
+                    machineAvailableTime = DateTime.Now;
+                }
+                else
+                {
+                    machineAvailableTime = bestMachineTasks.Max(t => t.EndTimeEst ?? DateTime.Now);
+                }
+
+                DateTime startTimeEst = (machineAvailableTime > currentBatchTime) ? machineAvailableTime : currentBatchTime;
+
+                // Step 5: Define estimated processing time (can be dynamic later)
+                TimeSpan processDuration = TimeSpan.FromHours(1); // Placeholder - you can adjust based on product settings later
+                DateTime endTimeEst = startTimeEst.Add(processDuration);
+
+                // Step 6: Schedule the task in DB
+                taskService.ScheduleTask(batch.BatchId, bestMachineId, userId,startTimeEst, endTimeEst);
+
+                // 🛠 NEW: Update batch's running clock
+                currentBatchTime = endTimeEst;
+            }
         }
-
         private static List<int> GetMachineSequence(int productType)
         {
             if (productType == 0)
@@ -41,5 +66,59 @@ namespace FlowServer.Models
             return new List<int>();
         }
 
+        public static Dictionary<int, List<Task>> GetQueuesByMachineType(int machineType)
+{
+    Dictionary<int, List<Task>> machineQueues = new Dictionary<int, List<Task>>();
+
+    MachineDBServices machineService = new MachineDBServices();
+    TaskDBServices taskService = new TaskDBServices();
+
+    // Get all machines
+    List<Machine> machines = machineService.ReadMachines();
+
+    // Filter machines by type
+    var filteredMachines = machines.Where(m => m.MachineType == machineType).ToList();
+
+    foreach (var machine in filteredMachines)
+    {
+        List<Task> queue = machineService.GetMachineQueue(machine.MachineId);
+        machineQueues[machine.MachineId] = queue;
+    }
+
+    return machineQueues;
+}
+
+        public static int FindBestMachine(Dictionary<int, List<Task>> machineQueues)
+        {
+            int bestMachineId = -1;
+            DateTime earliestAvailable = DateTime.MaxValue;
+
+            foreach (var machineQueue in machineQueues)
+            {
+                int machineId = machineQueue.Key;
+                List<Task> tasks = machineQueue.Value;
+
+                DateTime availableTime;
+
+                if (tasks.Count == 0)
+                {
+                    // No tasks, machine is free now
+                    availableTime = DateTime.Now;
+                }
+                else
+                {
+                    // Machine is busy, check last task's end time
+                    availableTime = tasks.Max(t => t.EndTimeEst ?? DateTime.Now);
+                }
+
+                if (availableTime < earliestAvailable)
+                {
+                    earliestAvailable = availableTime;
+                    bestMachineId = machineId;
+                }
+            }
+
+            return bestMachineId;
+        }
     }
 }

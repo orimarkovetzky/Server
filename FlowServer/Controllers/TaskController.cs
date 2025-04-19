@@ -23,11 +23,11 @@ namespace FlowServer.Controllers
         }
 
         [HttpPut("ScheduleTask")]
-        public IActionResult UpdateStartTimeEst(int batchId, int machineId, DateTime startTimeEst, DateTime endTimeEst)
+        public IActionResult UpdateStartTimeEst(int batchId, int machineId,int userId ,DateTime startTimeEst, DateTime endTimeEst)
         {
             try
             {
-                int result = Task.ScheduleTask(batchId, machineId, startTimeEst,endTimeEst);
+                int result = Task.ScheduleTask(batchId, machineId, userId,startTimeEst,endTimeEst);
                 if (result > 0)
                 {
                     return Ok("Task was scheduled");

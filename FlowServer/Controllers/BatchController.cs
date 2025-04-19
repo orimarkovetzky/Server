@@ -48,6 +48,29 @@ namespace FlowServer.Controllers
                 return StatusCode(500, "An error occurred: " + ex.Message);
             }
         }
+
+        [HttpPost("AssignBatchToQueues/{batchId}/{userId}")]
+        public IActionResult AssignBatchToQueues(int batchId, int userId)
+        {
+            try
+            {
+                BatchDBServices batchService = new BatchDBServices();
+                Batch batch = batchService.FindBatch(batchId); // <-- convert batchId into Batch object
+
+                if (batch == null)
+                {
+                    return NotFound($"Batch with ID {batchId} not found");
+                }
+
+                TaskAssigner.AssignBatchToQueues(batch,userId); // <-- Pass the Batch, not just ID
+
+                return Ok($"Batch {batchId} successfully assigned to machines");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 }
 

@@ -100,11 +100,13 @@ namespace FlowServer.DBServices
         }
        
 
-        public int ScheduleTask(int batchId, int machineId, DateTime startTimeEst, DateTime endTimeEst)
+        public int ScheduleTask(int batchId, int machineId,int userId ,DateTime startTimeEst, DateTime endTimeEst)
         {
             SqlConnection con = null;
             try
             {
+                CreateTask(batchId, machineId, userId);
+
                 con = connect("igroup16_test1");
                 string sqlQuery = "UPDATE MachineBatch SET startTimeEst=@startTimeEst, endTimeEst=@endTimeEst WHERE batchId=@batchId and machineId=@machineId";
                 Dictionary<string, object> paramDic = new Dictionary<string, object>

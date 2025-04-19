@@ -134,7 +134,8 @@ public Batch FindBatch(int BatchId)
                     OrderId = Convert.ToInt32(rdr["orderID"]),
                     ProductId = Convert.ToInt32(rdr["productID"]),
                     Quantity = Convert.ToInt32(rdr["quantity"]),
-                    Status = rdr["status"].ToString()
+                    Status = rdr["status"].ToString(),
+                    ProductType = Convert.ToInt32(rdr["type"])
                 };
             }
 

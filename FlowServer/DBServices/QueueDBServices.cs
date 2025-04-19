@@ -154,57 +154,7 @@ namespace FlowServer.DBServices
             }
         }
 
-        public List<Task> GetMachineQueue(int id) //Not for use
-        {
-            {
-                SqlConnection con = null;
-                try
-                {
-                    con = connect("igroup16_test1");
-                    string sqlQuery = "select * from MachineBatch where machineId=@machineId and status in ('Pending','Proccesing') order by status desc, startTimeEst";
-                    Dictionary<string, object> paramDic = new Dictionary<string, object>
-                {
-                    { "@machineId",id }
-                };
-
-                    using (SqlCommand cmd = CreateCommandWithTextQuery(sqlQuery, con, paramDic))
-                    {
-                        using (SqlDataReader reader = cmd.ExecuteReader())
-                        {
-                            List<Task> tasks = new List<Task>();
-                            while (reader.Read())
-                            {
-                                int batchId = Convert.ToInt32(reader["batchId"]);
-                                int machineId = Convert.ToInt32(reader["machineId"]);
-                                  DateTime estStartTime = reader["startTimeEst"] == DBNull.Value 
-                        ? DateTime.MinValue.Date 
-                        : Convert.ToDateTime(reader["startTimeEst"]);
-
-                    DateTime estEndTime = reader["endTimeEst"] == DBNull.Value 
-                        ? DateTime.MinValue.Date 
-                        : Convert.ToDateTime(reader["endTimeEst"]);
-
-                                string status = reader.GetString("status");
-                                Task task = new Task(batchId, machineId,estStartTime, estEndTime, status);
-                                tasks.Add(task);
-                            }
-                            return tasks;
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
-                finally
-                {
-                    if (con != null)
-                    {
-                        con.Close();
-                    }
-                }
-            }
-        }
+        
         public List<Batch> GetBatchesByStatus(string status)
         {
             SqlConnection con = null;
@@ -251,6 +201,29 @@ namespace FlowServer.DBServices
                     con.Close();
             }
         }
+
+        public static Dictionary<int, List<Task>> GetQueuesByMachineType(int machineType)
+        {
+            Dictionary<int, List<Task>> machineQueues = new Dictionary<int, List<Task>>();
+
+            MachineDBServices machineService = new MachineDBServices();
+            TaskDBServices taskService = new TaskDBServices();
+
+            // Get all machines
+            List<Machine> machines = machineService.ReadMachines();
+
+            // Filter machines by type
+            var filteredMachines = machines.Where(m => m.MachineType == machineType).ToList();
+
+            foreach (var machine in filteredMachines)
+            {
+                List<Task> queue = machineService.GetMachineQueue(machine.MachineId);
+                machineQueues[machine.MachineId] = queue;
+            }
+
+            return machineQueues;
+        }
+
 
     }
 

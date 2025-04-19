@@ -11,19 +11,19 @@ namespace FlowServer.Controllers
     [ApiController]
     public class QueueController : ControllerBase
     {
-        [HttpGet("GetMachineQueue/{machineId}")]
-        public IActionResult GetMachineQueue(int machineId)
-        {
-            try
-            {
-                List<Task> tasks = Queue.GetMachineQueue(machineId);
-                return Ok(tasks);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
-        }
+        //[HttpGet("GetMachineQueue/{machineId}")]
+        //public IActionResult GetMachineQueue(int machineId)
+        //{
+        //    try
+        //    {
+        //        List<Task> tasks = Queue.GetMachineQueue(machineId);
+        //        return Ok(tasks);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, ex.Message);
+        //    }
+        //}
 
         [HttpGet("GetBatchesByStatus/{status}")]
         public IActionResult GetBatchesByStatus(string status)
@@ -58,6 +58,21 @@ namespace FlowServer.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+        [HttpGet("GetQueuesByMachineType/{machineType}")]
+        public IActionResult GetQueuesByMachineType(int machineType)
+        {
+            try
+            {
+                Dictionary<int, List<Task>> queues = TaskAssigner.GetQueuesByMachineType(machineType);
+                return Ok(queues);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
 
     }
     }
