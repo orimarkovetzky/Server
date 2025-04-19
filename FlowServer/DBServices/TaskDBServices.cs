@@ -166,5 +166,65 @@ namespace FlowServer.DBServices
             }
         }
 
+        public bool UpdateStartTime(int batchId, int machineId)
+        {
+            SqlConnection con = null;
+            try
+            {
+                con = connect("YourDatabaseName"); // Replace with your DB name
+
+                string sql = "UPDATE MachineBatch SET startTime = @now WHERE batchId = @batchId AND machineId = @machineId";
+
+                using (SqlCommand cmd = new SqlCommand(sql, con))
+                {
+                    cmd.Parameters.AddWithValue("@now", DateTime.Now);
+                    cmd.Parameters.AddWithValue("@batchId", batchId);
+                    cmd.Parameters.AddWithValue("@machineId", machineId);
+
+                    int rowsAffected = cmd.ExecuteNonQuery();
+                    return rowsAffected > 0;
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            finally
+            {
+                if (con != null)
+                    con.Close();
+            }
+        }
+
+        public bool UpdateEndTime(int batchId, int machineId)
+        {
+            SqlConnection con = null;
+            try
+            {
+                con = connect("YourDatabaseName"); // Replace with your DB name
+
+                string sql = "UPDATE MachineBatch SET endTime = @now WHERE batchId = @batchId AND machineId = @machineId";
+
+                using (SqlCommand cmd = new SqlCommand(sql, con))
+                {
+                    cmd.Parameters.AddWithValue("@now", DateTime.Now);
+                    cmd.Parameters.AddWithValue("@batchId", batchId);
+                    cmd.Parameters.AddWithValue("@machineId", machineId);
+
+                    int rowsAffected = cmd.ExecuteNonQuery();
+                    return rowsAffected > 0;
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            finally
+            {
+                if (con != null)
+                    con.Close();
+            }
+        }
+
     }
 }

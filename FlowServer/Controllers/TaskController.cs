@@ -23,11 +23,11 @@ namespace FlowServer.Controllers
         }
 
         [HttpPut("ScheduleTask")]
-        public IActionResult UpdateStartTimeEst(int batchId, int machineId,int userId ,DateTime startTimeEst, DateTime endTimeEst)
+        public IActionResult UpdateStartTimeEst(int batchId, int machineId, int userId, DateTime startTimeEst, DateTime endTimeEst)
         {
             try
             {
-                int result = Task.ScheduleTask(batchId, machineId, userId,startTimeEst,endTimeEst);
+                int result = Task.ScheduleTask(batchId, machineId, userId, startTimeEst, endTimeEst);
                 if (result > 0)
                 {
                     return Ok("Task was scheduled");
@@ -65,6 +65,45 @@ namespace FlowServer.Controllers
             }
         }
 
-    }
 
+
+        [HttpPut("start-time/{batchId}/{machineId}")]
+        public IActionResult UpdateStartTime(int batchId, int machineId)
+        {
+            try
+            {
+                TaskDBServices taskService = new TaskDBServices();
+                bool updated = taskService.UpdateStartTime(batchId, machineId);
+
+                if (updated)
+                    return Ok($"Start time updated for batch {batchId} on machine {machineId}");
+                else
+                    return NotFound($"No task found for batch {batchId} on machine {machineId}");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPut("end-time/{batchId}/{machineId}")]
+        public IActionResult UpdateEndTime(int batchId, int machineId)
+        {
+            try
+            {
+                TaskDBServices taskService = new TaskDBServices();
+                bool updated = taskService.UpdateEndTime(batchId, machineId);
+
+                if (updated)
+                    return Ok($"End time updated for batch {batchId} on machine {machineId}");
+                else
+                    return NotFound($"No task found for batch {batchId} on machine {machineId}");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+    }
 }
+    

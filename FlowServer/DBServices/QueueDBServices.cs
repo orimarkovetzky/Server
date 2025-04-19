@@ -73,10 +73,33 @@ namespace FlowServer.DBServices
                 List<Machine> machines = Machine.ReadMachines();
                 List<Object> machinePageData = new List<Object>();
 
+               
+
                 foreach (var machine in machines)
                 {
                     // Get tasks for the current machine
-                    List<Object> tasks = GetMachineTasks(machine.MachineId);
+                    List<Task> tasks = GetMachineTasks(machine.MachineId);
+
+                    if (tasks.Count > 0)
+                    {
+                        // Fetch current task's settings
+                        Task currentTask = tasks[0];
+                        int currentTemp = -1000;
+                        int currentNitrogen = -1000;
+                        int nextTemp = -1000;
+                        int nextNitrogen = -1000;
+                        currentTemp = currentTask.temp;
+                        currentNitrogen = currentTask.flow;
+                       
+
+                        if (tasks.Count > 1)
+                        {
+                            // Fetch next task's settings
+                            Task nextTask = tasks[1];
+                            nextTemp = nextTask.temp;
+                            nextNitrogen = nextTask.flow;
+                        }
+                    }
 
                     // Create an object with machine details and tasks
                     var machineData = new
@@ -86,6 +109,7 @@ namespace FlowServer.DBServices
                         MachineImage= machine.ImagePath,
                         Tasks = tasks
                     };
+
 
                     machinePageData.Add(machineData);
                 }
@@ -102,7 +126,7 @@ namespace FlowServer.DBServices
         }
 
 
-        public List<object> GetMachineTasks(int machineId)
+        public List<Task> GetMachineTasks(int machineId)
         {
             SqlConnection con = null;
             try
@@ -118,21 +142,23 @@ namespace FlowServer.DBServices
                 {
                     using (SqlDataReader reader = cmd.ExecuteReader())
                     {
-                        List<object> tasks = new List<object>();
+                        List<Task> tasks = new List<Task>();
                         var counter = 1;
                         while (reader.Read())
                         {
                            
-                            var taskObj = new
+                            Task taskObj = new Task
                             {
-                                id = counter++,
+                                //id = counter++,
                                 name = reader["name"].ToString(),
                                 units = Convert.ToInt32(reader["units"]),
                                 processTime = Convert.ToInt32(reader["processTime"]),
                                 progress = reader["progress"] != DBNull.Value ? float.Parse(reader["progress"].ToString()) : 0f,
                                 inQueue = Convert.ToInt32(reader["inQueue"]) == 1,
                                 type = Convert.ToInt32(reader["type"]),
-                                color = reader["color"].ToString()
+                                color = reader["color"].ToString(),
+                                flow = Convert.ToInt32(reader["flow"]),
+                                temp = Convert.ToInt32(reader["temperature"])
                             };
 
                             tasks.Add(taskObj);

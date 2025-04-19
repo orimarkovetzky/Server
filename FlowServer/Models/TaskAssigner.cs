@@ -37,7 +37,7 @@ namespace FlowServer.Models
                 }
                 else
                 {
-                    machineAvailableTime = bestMachineTasks.Max(t => t.EndTimeEst ?? DateTime.Now);
+                    machineAvailableTime = bestMachineTasks.Max(t => t.endTimeEst ?? DateTime.Now);
                 }
 
                 DateTime startTimeEst = (machineAvailableTime > currentBatchTime) ? machineAvailableTime : currentBatchTime;
@@ -108,7 +108,7 @@ namespace FlowServer.Models
                 else
                 {
                     // Machine is busy, check last task's end time
-                    availableTime = tasks.Max(t => t.EndTimeEst ?? DateTime.Now);
+                    availableTime = tasks.Max(t => t.endTimeEst ?? DateTime.Now);
                 }
 
                 if (availableTime < earliestAvailable)
