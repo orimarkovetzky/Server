@@ -15,6 +15,10 @@ using System.Dynamic;
 
 public class BatchDBServices
 {
+    public BatchDBServices() //defualt constructor
+    {
+    }
+
     public SqlConnection connect(String conString)
     {
         // read the connection string from the configuration file
@@ -43,89 +47,37 @@ public class BatchDBServices
         return cmd;
     }
 
-    private SqlCommand CreateCommandWithTextQuery(string sqlQuery, SqlConnection con, Dictionary<string, object> paramDic)
-    {
-        SqlCommand cmd = new SqlCommand
-        {
-            Connection = con,
-            CommandText = sqlQuery,
-            CommandTimeout = 10, // optional
-            CommandType = CommandType.Text // <-- this is the key difference
-        };
 
-        if (paramDic != null)
+    public List<dynamic> GetTasksByBatchId(int batchId)
+    {
+        var tasks = new List<dynamic>();
+
+        using (SqlConnection con = connect("igroup16_test1"))
+        using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("GetTasksByBatchId", con, new Dictionary<string, object> { { "@BatchId", batchId } }))
+        using (SqlDataReader reader = cmd.ExecuteReader())
         {
-            foreach (KeyValuePair<string, object> param in paramDic)
+            while (reader.Read())
             {
-                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                dynamic task = new ExpandoObject();
+                task.BatchId = reader.GetInt32(reader.GetOrdinal("batchId"));
+                task.MachineId = reader.GetInt32(reader.GetOrdinal("machineId"));
+                task.StartTimeEst = reader.GetDateTime(reader.GetOrdinal("startTimeEst"));
+                task.EndTimeEst = reader.GetDateTime(reader.GetOrdinal("endTimeEst"));
+                task.Status = reader.GetString(reader.GetOrdinal("status"));
+                tasks.Add(task);
             }
         }
 
-        return cmd;
+        return tasks;
     }
 
 
-public List<dynamic> GetTasksByBatchId(int batchId)
-{
-    SqlConnection con = null;
-    try
+    public Batch FindBatch(int batchId)
     {
-        con = connect("igroup16_test1");
-
-        Dictionary<string, object> paramDic = new Dictionary<string, object>
+        using (SqlConnection con = connect("igroup16_test1"))
+        using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("GetBatchById", con, new Dictionary<string, object> { { "@BatchId", batchId } }))
+        using (SqlDataReader rdr = cmd.ExecuteReader())
         {
-            { "@BatchId", batchId }
-        };
-
-        using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("GetTasksByBatchId", con, paramDic))
-        {
-            using (SqlDataReader reader = cmd.ExecuteReader())
-            {
-                var tasks = new List<dynamic>();
-
-                while (reader.Read())
-                {
-                    dynamic task = new ExpandoObject();
-
-                    task.BatchId = reader.GetInt32(reader.GetOrdinal("batchId"));
-                    task.MachineId = reader.GetInt32(reader.GetOrdinal("machineId"));
-                    task.StartTimeEst = reader.GetDateTime(reader.GetOrdinal("startTimeEst"));
-                    task.EndTimeEst = reader.GetDateTime(reader.GetOrdinal("endTimeEst"));
-                    task.Status = reader.GetString(reader.GetOrdinal("status"));
-
-                    tasks.Add(task);
-                }
-
-                return tasks;
-            }
-        }
-    }
-    catch (Exception ex)
-    {
-        throw ex;
-    }
-    finally
-    {
-        if (con != null)
-            con.Close();
-    }
-}
-
-public Batch FindBatch(int BatchId)
-    {
-        SqlConnection con = null;
-        try
-        {
-            con = connect("igroup16_test1");
-
-            var paramDic = new Dictionary<string, object>
-        {
-            { "@BatchId", BatchId }
-        };
-
-            SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("GetBatchById", con, paramDic);
-            SqlDataReader rdr = cmd.ExecuteReader();
-
             if (rdr.Read())
             {
                 return new Batch()
@@ -139,84 +91,39 @@ public Batch FindBatch(int BatchId)
                 };
             }
 
-            return null; // Not found
-        }
-        catch (Exception ex)
-        {
-            throw ex;
-        }
-        finally
-        {
-            if (con != null)
-            {
-                con.Close();
-            }
+            return null;
         }
     }
 
     public int UpdateBatchStatus(int batchId, string newStatus)
     {
-        SqlConnection con = null;
-        try
-        {
-            con = connect("igroup16_test1");
-            string updateStr = "UPDATE Batches SET status = @status WHERE batchID = @batchId";
-
-            Dictionary<string, object> paramDic = new Dictionary<string, object>
-            {
-                { "@status", newStatus },
-                { "@batchId", batchId }
-            };
-
-            SqlCommand cmd = CreateCommandWithTextQuery(updateStr, con, paramDic);
-            int rowsAffected = cmd.ExecuteNonQuery();
-            return rowsAffected;
-        }
-        catch (Exception ex)
-        {
-            throw ex;
-        }
-        finally
-        {
-            if (con != null)
-            {
-                con.Close();
-            }
-        }
-    }
-
-    public BatchDBServices()
+        var paramDic = new Dictionary<string, object>
     {
+        { "@batchId", batchId },
+        { "@status", newStatus }
+    };
+
+        using (SqlConnection con = connect("igroup16_test1"))
+        using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("UpdateBatchStatus", con, paramDic))
+        {
+            return cmd.ExecuteNonQuery(); // number of rows affected
+        }
     }
+
     public void InsertBatch(Batch batch)
     {
-        SqlConnection con = null;
+        var paramDic = new Dictionary<string, object>
+    {
+        { "@orderID", batch.OrderId },
+        { "@productID", batch.ProductId },
+        { "@quantity", batch.Quantity },
+        { "@status", "Pending" }
+    };
 
-        try
+        using (SqlConnection con = connect("DefaultConnection"))
+        using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("InsertBatchToOrder", con, paramDic))
         {
-            con = connect("DefaultConnection");
-
-            Dictionary<string, object> paramDic = new Dictionary<string, object>
-        {
-            { "@orderID", batch.OrderId },
-            { "@productID", batch.ProductId },
-            { "@quantity", batch.Quantity },
-            { "@status", "Pending" }
-        };
-
-            SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("InsertBatchToOrder", con, paramDic);
             cmd.ExecuteNonQuery();
-        }
-        catch (Exception ex)
-        {
-            throw ex;
-        }
-        finally
-        {
-            if (con != null)
-            {
-                con.Close();
-            }
         }
     }
 }

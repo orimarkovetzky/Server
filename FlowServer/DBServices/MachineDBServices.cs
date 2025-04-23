@@ -13,8 +13,13 @@ using Task = FlowServer.Models.Task;
 namespace FlowServer.DBServices
 {
     public class MachineDBServices
-
     {
+
+        public MachineDBServices()
+        {
+
+        }
+
         public SqlConnection connect(String conString)
         {
 
@@ -51,39 +56,14 @@ namespace FlowServer.DBServices
 
             return cmd;
         }
-
-        private SqlCommand CreateCommandWithTextQuery(string sqlQuery, SqlConnection con, Dictionary<string, object> paramDic)
-        {
-            SqlCommand cmd = new SqlCommand
-            {
-                Connection = con,
-                CommandText = sqlQuery,
-                CommandTimeout = 10, // optional
-                CommandType = CommandType.Text // <-- this is the key difference
-            };
-
-            if (paramDic != null)
-            {
-                foreach (KeyValuePair<string, object> param in paramDic)
-                {
-                    cmd.Parameters.AddWithValue(param.Key, param.Value);
-                }
-            }
-
-            return cmd;
-        }
-
-
         public List<Machine> ReadMachines()
         {
-            SqlConnection con = null;
             List<Machine> machines = new List<Machine>();
-            try
+
+            using (SqlConnection con = connect("igroup16_test1"))
+            using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("GetAllMachines", con, null))
+            using (SqlDataReader rdr = cmd.ExecuteReader())
             {
-                con = connect("igroup16_test1");
-                String selectSTR = "SELECT * FROM Machines";
-                SqlCommand cmd = CreateCommandWithTextQuery(selectSTR, con, null);
-                SqlDataReader rdr = cmd.ExecuteReader();
                 while (rdr.Read())
                 {
                     Machine m = new Machine
@@ -97,122 +77,74 @@ namespace FlowServer.DBServices
                     };
                     machines.Add(m);
                 }
-                return machines;
             }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-            finally
-            {
-                if (con != null)
-                {
-                    con.Close();
-                }
-            }
+
+            return machines;
         }
 
-        public List<Task> GetMachineQueue(int id) 
+        public List<Task> GetMachineQueue(int id)
         {
+            var paramDic = new Dictionary<string, object>
+    {
+        { "@machineId", id }
+    };
+
+            List<Task> tasks = new List<Task>();
+
+            using (SqlConnection con = connect("igroup16_test1"))
+            using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("GetMachineQueue", con, paramDic))
+            using (SqlDataReader reader = cmd.ExecuteReader())
             {
-                SqlConnection con = null;
-                try
+                while (reader.Read())
                 {
-                    con = connect("igroup16_test1");
-                    string sqlQuery = "select * from MachineBatch where machineId=@machineId and status in ('Pending','Proccesing') order by status desc, startTimeEst";
-                    Dictionary<string, object> paramDic = new Dictionary<string, object>
-                {
-                    { "@machineId",id }
-                };
+                    int batchId = Convert.ToInt32(reader["batchId"]);
+                    int machineId = Convert.ToInt32(reader["machineId"]);
 
-                    using (SqlCommand cmd = CreateCommandWithTextQuery(sqlQuery, con, paramDic))
-                    {
-                        using (SqlDataReader reader = cmd.ExecuteReader())
-                        {
-                            List<Task> tasks = new List<Task>();
-                            while (reader.Read())
-                            {
-                                int batchId = Convert.ToInt32(reader["batchId"]);
-                                int machineId = Convert.ToInt32(reader["machineId"]);
-                                DateTime estStartTime = reader["startTimeEst"] == DBNull.Value
-                      ? DateTime.MinValue.Date
-                      : Convert.ToDateTime(reader["startTimeEst"]);
+                    DateTime estStartTime = reader["startTimeEst"] == DBNull.Value
+                        ? DateTime.MinValue
+                        : Convert.ToDateTime(reader["startTimeEst"]);
 
-                                DateTime estEndTime = reader["endTimeEst"] == DBNull.Value
-                                    ? DateTime.MinValue.Date
-                                    : Convert.ToDateTime(reader["endTimeEst"]);
+                    DateTime estEndTime = reader["endTimeEst"] == DBNull.Value
+                        ? DateTime.MinValue
+                        : Convert.ToDateTime(reader["endTimeEst"]);
 
-                                string status = reader.GetString("status");
-                                Task task = new Task(batchId, machineId, estStartTime, estEndTime, status);
-                                tasks.Add(task);
-                            }
-                            return tasks;
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
-                finally
-                {
-                    if (con != null)
-                    {
-                        con.Close();
-                    }
+                    string status = reader["status"].ToString();
+
+                    Task task = new Task(batchId, machineId, estStartTime, estEndTime, status);
+                    tasks.Add(task);
                 }
             }
-        }
 
+            return tasks;
+        }
         public int UpdateMachineStatus(int machineId, int newStatus)
         {
-            SqlConnection con = null;
-            try
+            var paramDic = new Dictionary<string, object>
             {
-                con = connect("igroup16_test1");
-                string updateStr = "UPDATE Machines SET status = @status WHERE machineId = @id";
+                { "@id", machineId },
+                { "@status", newStatus }
 
-                Dictionary<string, object> paramDic = new Dictionary<string, object>
-        {
-            { "@status", newStatus },
-            { "@id", machineId }
-        };
+            };
 
-                SqlCommand cmd = CreateCommandWithTextQuery(updateStr, con, paramDic);
-                int rowsAffected = cmd.ExecuteNonQuery();
-                return rowsAffected;
-            }
-            catch (Exception ex)
+            using (SqlConnection con = connect("igroup16_test1"))
+            using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("UpdateMachineStatus", con, paramDic))
             {
-                throw ex;
-            }
-            finally
-            {
-                if (con != null)
-                {
-                    con.Close();
-                }
+                return cmd.ExecuteNonQuery();
             }
         }
 
-        public MachineDBServices()
-        {
-
-        }
 
         public Machine findMachine(int machineId)
         {
+            var paramDic = new Dictionary<string, object>
+    {
+        { "@MachineID", machineId }
+    };
 
-            SqlConnection con = null;
-            try
+            using (SqlConnection con = connect("igroup16_test1"))
+            using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("FindMachineById", con, paramDic))
+            using (SqlDataReader rdr = cmd.ExecuteReader())
             {
-                con = connect("igroup16_test1");
-                string selectSTR = $"SELECT * FROM Machines WHERE machineId = @MachineID";
-                var paramDic = new Dictionary<string, object> { { "@MachineID", machineId } };
-
-                SqlCommand cmd = CreateCommandWithTextQuery(selectSTR, con, paramDic);
-                SqlDataReader rdr = cmd.ExecuteReader();
-
                 if (rdr.Read())
                 {
                     return new Machine()
@@ -225,20 +157,8 @@ namespace FlowServer.DBServices
                     };
                 }
 
-                return null; // Not found
+                return null; //If machine not found
             }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-            finally
-            {
-                if (con != null)
-                {
-                    con.Close();
-                }
-            }
-
         }
 
     }

@@ -4,6 +4,13 @@ namespace FlowServer.Models
 {
     public class Batch
     {
+
+        public int BatchId { get; set; }
+        public int OrderId { get; set; }
+        public int ProductId { get; set; }
+        public int Quantity { get; set; }
+        public string Status { get; set; } = string.Empty;
+        public int ProductType { get; set; } // 0 for O-Ring, 1 for Fingers
         public Batch(int batchId, int orderId, int productId, int quantity, string status, int productType) //Full constructor 
         {
             BatchId = batchId;
@@ -28,12 +35,6 @@ namespace FlowServer.Models
             return dbs.UpdateBatchStatus(batchId, newStatus);
         }
 
-        public int BatchId { get; set; }
-        public int OrderId { get; set; }
-        public int ProductId { get; set; }
-        public int Quantity { get; set; }
-        public string Status { get; set; } = string.Empty;
-        public int ProductType { get; set; } // 0 for O-Ring, 1 for Fingers
 
     }
 

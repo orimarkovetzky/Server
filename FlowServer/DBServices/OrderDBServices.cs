@@ -34,53 +34,19 @@ namespace FlowServer.DBServices
             return cmd;
         }
 
-        private SqlCommand CreateCommandWithTextQuery(string sqlQuery, SqlConnection con, Dictionary<string, object> paramDic)
-        {
-            SqlCommand cmd = new SqlCommand
-            {
-                Connection = con,
-                CommandText = sqlQuery,
-                CommandTimeout = 10, // optional
-                CommandType = CommandType.Text // <-- this is the key difference
-            };
-
-            if (paramDic != null)
-            {
-                foreach (KeyValuePair<string, object> param in paramDic)
-                {
-                    cmd.Parameters.AddWithValue(param.Key, param.Value);
-                }
-            }
-
-            return cmd;
-        }
         public int InsertOrder(Order order)
         {
-            SqlConnection con = null;
+            var paramDic = new Dictionary<string, object>
+    {
+        { "@customerID", order.CustomerId },
+        { "@orderDate", order.OrderDate },
+        { "@supplyDate", order.SupplyDate }
+    };
 
-            try
+            using (SqlConnection con = connect("DefaultConnection"))
+            using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("InsertOrder", con, paramDic))
             {
-                con = connect("DefaultConnection");
-
-                Dictionary<string, object> paramDic = new Dictionary<string, object>
-        {
-            { "@customerID", order.CustomerId },
-            { "@orderDate", order.OrderDate },
-            { "@supplyDate", order.SupplyDate }
-        };
-
-                SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("InsertOrder", con, paramDic);
-
-                return Convert.ToInt32(cmd.ExecuteScalar());
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-            finally
-            {
-                if (con != null)
-                    con.Close();
+                return Convert.ToInt32(cmd.ExecuteScalar()); // returns new OrderID 
             }
         }
     }

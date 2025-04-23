@@ -44,27 +44,6 @@ namespace FlowServer.DBServices
             return cmd;
         }
 
-        private SqlCommand CreateCommandWithTextQuery(string sqlQuery, SqlConnection con, Dictionary<string, object> paramDic)
-        {
-            SqlCommand cmd = new SqlCommand
-            {
-                Connection = con,
-                CommandText = sqlQuery,
-                CommandTimeout = 10, // optional
-                CommandType = CommandType.Text // <-- this is the key difference
-            };
-
-            if (paramDic != null)
-            {
-                foreach (KeyValuePair<string, object> param in paramDic)
-                {
-                    cmd.Parameters.AddWithValue(param.Key, param.Value);
-                }
-            }
-
-            return cmd;
-        }
-
         public List<Object> GetMachinePageData() //Returns all machines and their tasks for the machine page
         {
             try
