@@ -70,6 +70,81 @@ public class BatchDBServices
 
         return tasks;
     }
+    public List<BatchView> GetProductPageData()
+    {
+        var batchViews = new List<BatchView>();
+
+        using (SqlConnection con = connect("igroup16_test1"))
+        using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("SPGetAllBatches", con,null))
+        using (SqlDataReader reader = cmd.ExecuteReader())
+        {
+            while (reader.Read())
+            {
+                var batch = new BatchView
+                {
+                    BatchId = reader.GetInt32(reader.GetOrdinal("batchId")),
+                    OrderId = reader.GetInt32(reader.GetOrdinal("orderId")),
+                    ProductId = reader.GetInt32(reader.GetOrdinal("productId")),
+                    Quantity = reader.GetInt32(reader.GetOrdinal("quantity")),
+                    Status = reader.GetString(reader.GetOrdinal("status")),
+                    ProductName = reader.GetString(reader.GetOrdinal("productName")),
+                    ProductType = reader.GetBoolean(reader.GetOrdinal("productType")) ? 1 : 0,
+                    Color = reader.GetString(reader.GetOrdinal("color")),
+                    SupplyDate = reader.GetDateTime(reader.GetOrdinal("supplyDate")),
+                };
+
+                if (batch.Status == "InProcess" || batch.Status == "Complete")
+                {
+                    batch.Tasks = GetRelevantTasksByBatchId(batch.BatchId);
+                }
+
+                batchViews.Add(batch);
+            }
+        }
+
+        return batchViews;
+    }
+
+    public List<TaskView> GetRelevantTasksByBatchId(int batchId)
+    {
+        var tasks = new List<TaskView>();
+
+        using (SqlConnection con = connect("igroup16_test1"))
+        using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral(
+            "SPGetBatchTasks",
+            con,
+            new Dictionary<string, object> { { "@BatchId", batchId } }
+        ))
+        using (SqlDataReader reader = cmd.ExecuteReader())
+        {
+          
+            while (reader.Read())
+            {
+                var task = new TaskView
+                {
+                    BatchId = reader.GetInt32(reader.GetOrdinal("batchId")),
+                    MachineId = reader.GetInt32(reader.GetOrdinal("machineId")),
+                    StartTimeEst = reader.IsDBNull(reader.GetOrdinal("startTimeEst"))
+        ? DateTime.MinValue
+        : reader.GetDateTime(reader.GetOrdinal("startTimeEst")),
+                    EndTimeEst = reader.IsDBNull(reader.GetOrdinal("endTimeEst"))
+        ? DateTime.MinValue
+        : reader.GetDateTime(reader.GetOrdinal("endTimeEst")),
+                    StartTime = reader.IsDBNull(reader.GetOrdinal("startTime"))
+        ? DateTime.MinValue
+        : reader.GetDateTime(reader.GetOrdinal("startTime")),
+                    EndTime = reader.IsDBNull(reader.GetOrdinal("endTime"))
+        ? DateTime.MinValue
+        : reader.GetDateTime(reader.GetOrdinal("endTime")),
+                    Status = reader.GetString(reader.GetOrdinal("status"))
+                };
+
+                tasks.Add(task);
+            }
+        }
+
+        return tasks;
+    }
 
 
     public Batch FindBatch(int batchId)
@@ -126,4 +201,6 @@ public class BatchDBServices
             cmd.ExecuteNonQuery();
         }
     }
+
+ 
 }

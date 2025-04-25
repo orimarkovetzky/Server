@@ -19,6 +19,23 @@ namespace FlowServer.Controllers
             return Ok(batch);
         }
 
+        [HttpGet]
+        [Route("GetProductPageData")]
+        public ActionResult<List<BatchView>>GetProductPageData()
+        {
+            try
+            {
+                List<BatchView> batches = BatchView.GetProductPageData();
+                if (batches == null || batches.Count == 0)
+                    return NotFound("No batches found.");
+                return Ok(batches);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred: " + ex.Message);
+            }
+        }
+
         [HttpPut("{id}/{status}")]
         public ActionResult UpdateBatchStatus(int id, string status)
         {
