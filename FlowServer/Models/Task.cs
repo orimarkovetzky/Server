@@ -5,6 +5,7 @@ namespace FlowServer.Models
 {
     public class Task
     {
+        public int id { get; set; } // id of the task
         public int batchId { get; set; }
         public int machineId { get; set; }
         public DateTime startTimeEst { get; set; }
@@ -13,7 +14,6 @@ namespace FlowServer.Models
         public string status { get; set; }
         public DateTime? endTimeEst { get; internal set; }
         public int units { get; set; }
-
         public string name { get; set; } // name of the product
         public float processTime { get; set; } // in minutes
         public float progress { get; set; } // in percentage     

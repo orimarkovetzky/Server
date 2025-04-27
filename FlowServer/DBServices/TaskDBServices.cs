@@ -69,160 +69,86 @@ namespace FlowServer.DBServices
 
         public int ChangeTaskStatus(int batchId, int machineId, string status)
         {
-            SqlConnection con = null;
-            try
-            {
-                con = connect("igroup16_test1");
-                string sqlQuery = "UPDATE MachineBatch SET status=@status WHERE batchId=@batchId and machineId=@machineId";
-                Dictionary<string, object> paramDic = new Dictionary<string, object>
-                {
-                    { "@batchId", batchId },
-                    {"@machineId",machineId },
-                    { "@status", status }
-                };
+            var paramDic = new Dictionary<string, object>
+    {
+        { "@batchId", batchId },
+        { "@machineId", machineId },
+        { "@status", status }
+    };
 
-                using (SqlCommand cmd = CreateCommandWithTextQuery(sqlQuery, con, paramDic))
-                {
-                    return cmd.ExecuteNonQuery();
-                }
-            }
-            catch (Exception ex)
+            using (SqlConnection con = connect("igroup16_test1"))
+            using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("ChangeTaskStatus", con, paramDic))
             {
-                throw ex;
-            }
-            finally
-            {
-                if (con != null)
-                {
-                    con.Close();
-                }
+                return cmd.ExecuteNonQuery();
             }
         }
-       
 
-        public int ScheduleTask(int batchId, int machineId,int userId ,DateTime startTimeEst, DateTime endTimeEst)
+        public int ScheduleTask(int batchId, int machineId, int userId, DateTime startTimeEst, DateTime endTimeEst)
         {
-            SqlConnection con = null;
-            try
-            {
-                CreateTask(batchId, machineId, userId);
+            // This is assumed to insert a new row or ensure task exists
+            CreateTask(batchId, machineId, userId);
 
-                con = connect("igroup16_test1");
-                string sqlQuery = "UPDATE MachineBatch SET startTimeEst=@startTimeEst, endTimeEst=@endTimeEst WHERE batchId=@batchId and machineId=@machineId";
-                Dictionary<string, object> paramDic = new Dictionary<string, object>
-                {
-                    { "@batchId", batchId },
-                    { "@machineId", machineId },
-                    { "@startTimeEst", startTimeEst },
-                    { "@endTimeEst", endTimeEst }
-                };
+            var paramDic = new Dictionary<string, object>
+    {
+        { "@batchId", batchId },
+        { "@machineId", machineId },
+        { "@startTimeEst", startTimeEst },
+        { "@endTimeEst", endTimeEst }
+    };
 
-                using (SqlCommand cmd = CreateCommandWithTextQuery(sqlQuery, con, paramDic))
-                {
-                    return cmd.ExecuteNonQuery();
-                }
-            }
-            catch (Exception ex)
+            using (SqlConnection con = connect("igroup16_test1"))
+            using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("ScheduleTask", con, paramDic))
             {
-                throw ex;
-            }
-            finally
-            {
-                if (con != null)
-                {
-                    con.Close();
-                }
+                return cmd.ExecuteNonQuery();
             }
         }
-
         public int CreateTask(int batchId, int machineId, int userId)
         {
-            SqlConnection con = null;
-            try
+            var paramDic = new Dictionary<string, object>
+    {
+        { "@batchId", batchId },
+        { "@machineId", machineId },
+        { "@userId", userId }
+    };
+
+            using (SqlConnection con = connect("igroup16_test1"))
+            using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("SPCreateTask", con, paramDic))
             {
-                con = connect("igroup16_test1");
-                string sqlQuery = "INSERT INTO MachineBatch (batchId, machineId, userId,status) VALUES (@batchId, @machineId, @userId,'Pending')";
-                Dictionary<string, object> paramDic = new Dictionary<string, object>
-                {
-                    { "@batchId", batchId },
-                    { "@machineId", machineId },
-                    { "@userId", userId }
-                };
-                using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("SPCreateTask", con, paramDic))
-                {
-                    return cmd.ExecuteNonQuery();
-                }
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-            finally
-            {
-                if (con != null)
-                {
-                    con.Close();
-                }
+                return cmd.ExecuteNonQuery();
             }
         }
 
         public bool UpdateStartTime(int batchId, int machineId)
         {
-            SqlConnection con = null;
-            try
-            {
-                con = connect("YourDatabaseName"); // Replace with your DB name
+            var paramDic = new Dictionary<string, object>
+    {
+        { "@batchId", batchId },
+        { "@machineId", machineId },
+        { "@now", DateTime.Now }
+    };
 
-                string sql = "UPDATE MachineBatch SET startTime = @now WHERE batchId = @batchId AND machineId = @machineId";
-
-                using (SqlCommand cmd = new SqlCommand(sql, con))
-                {
-                    cmd.Parameters.AddWithValue("@now", DateTime.Now);
-                    cmd.Parameters.AddWithValue("@batchId", batchId);
-                    cmd.Parameters.AddWithValue("@machineId", machineId);
-
-                    int rowsAffected = cmd.ExecuteNonQuery();
-                    return rowsAffected > 0;
-                }
-            }
-            catch (Exception)
+            using (SqlConnection con = connect("igroup16_test1"))
+            using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("UpdateStartTime", con, paramDic))
             {
-                throw;
-            }
-            finally
-            {
-                if (con != null)
-                    con.Close();
+                int rowsAffected = cmd.ExecuteNonQuery();
+                return rowsAffected > 0;
             }
         }
 
         public bool UpdateEndTime(int batchId, int machineId)
         {
-            SqlConnection con = null;
-            try
-            {
-                con = connect("YourDatabaseName"); // Replace with your DB name
+            var paramDic = new Dictionary<string, object>
+    {
+        { "@batchId", batchId },
+        { "@machineId", machineId },
+        { "@now", DateTime.Now }
+    };
 
-                string sql = "UPDATE MachineBatch SET endTime = @now WHERE batchId = @batchId AND machineId = @machineId";
-
-                using (SqlCommand cmd = new SqlCommand(sql, con))
-                {
-                    cmd.Parameters.AddWithValue("@now", DateTime.Now);
-                    cmd.Parameters.AddWithValue("@batchId", batchId);
-                    cmd.Parameters.AddWithValue("@machineId", machineId);
-
-                    int rowsAffected = cmd.ExecuteNonQuery();
-                    return rowsAffected > 0;
-                }
-            }
-            catch (Exception)
+            using (SqlConnection con = connect("igroup16_test1"))
+            using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("UpdateEndTime", con, paramDic))
             {
-                throw;
-            }
-            finally
-            {
-                if (con != null)
-                    con.Close();
+                int rowsAffected = cmd.ExecuteNonQuery();
+                return rowsAffected > 0;
             }
         }
 
