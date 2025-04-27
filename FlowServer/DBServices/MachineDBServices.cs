@@ -9,6 +9,7 @@ using System.Security.Cryptography;
 using System.Xml.Linq;
 using FlowServer.Models;
 using Task = FlowServer.Models.Task;
+using MachineCard = FlowServer.Models.MachineCard;
 
 namespace FlowServer.DBServices
 {
@@ -132,6 +133,92 @@ namespace FlowServer.DBServices
                 return cmd.ExecuteNonQuery();
             }
         }
+        public List<MachineCard> GetMachineCards()
+        {
+            var machineCards = new List<MachineCard>();
+
+            // First, get the list of all machines
+            List<Machine> machines = ReadMachines(); // You'll need a GetAllMachines() function
+
+            foreach (var machine in machines)
+            {
+                var paramDic = new Dictionary<string, object>
+        {
+            { "@machineId", machine.MachineId }
+        };
+
+                string currentProduct = null;
+                string nextProduct = null;
+                int timeRemainingSeconds = 0;
+                bool isDelayed = false;
+
+                using (SqlConnection con = connect("igroup16_test1"))
+                using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("GetTop2TasksByMachine", con, paramDic))
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    int taskIndex = 0;
+                    while (reader.Read() && taskIndex < 2)
+                    {
+                        string productName = reader["productName"].ToString();
+                        string taskStatus = reader["TaskStatus"].ToString();
+                        DateTime? endTimeEst = reader["endTimeEst"] != DBNull.Value ? Convert.ToDateTime(reader["endTimeEst"]) : (DateTime?)null;
+
+                        if (taskIndex == 0) // First task = current product
+                        {
+                            currentProduct = productName;
+
+                            if (endTimeEst.HasValue)
+                            {
+                                var remaining = endTimeEst.Value - DateTime.Now;
+                                if (remaining.TotalSeconds < 0)
+                                {
+                                    isDelayed = true;
+                                    timeRemainingSeconds = 0;
+                                }
+                                else
+                                {
+                                    timeRemainingSeconds = (int)remaining.TotalSeconds;
+                                }
+                            }
+                        }
+                        else if (taskIndex == 1) // Second task = next product
+                        {
+                            nextProduct = productName;
+                        }
+
+                        taskIndex++;
+                    }
+                }
+
+                string status = machine.Status switch
+                {
+                    0 => "out_of_order",
+                    1 => "ready",
+                    2 => "maintenance",
+                    3 => "running",
+                    _ => "unknown"
+                };
+
+                // Now create the MachineCard directly
+                var machineCard = new MachineCard(
+                    machine.MachineId,
+                    $"{machine.MachineName} {machine.MachineId}",
+                    machine.MachineType,
+                    status,
+                    currentProduct,
+                    nextProduct,
+                    timeRemainingSeconds,
+                    isDelayed
+                );
+
+                machineCards.Add(machineCard);
+            }
+
+            return machineCards;
+        }
+
+
+
 
 
         public Machine findMachine(int machineId)
