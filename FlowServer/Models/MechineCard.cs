@@ -10,10 +10,11 @@ namespace FlowServer.Models
         public string Status { get; set; }
         public string CurrentProduct { get; set; }
         public string NextProduct { get; set; }
+        public int Progress { get; set; }
         public int TimeRemaining { get; set; }
         public bool IsDelayed { get; set; } = false;
 
-        public MachineCard(int id, string name, int type, string status, string currentProduct, string nextProduct, int timeRemaining, bool isDelayed)
+        public MachineCard(int id, string name, int type, string status, string currentProduct, string nextProduct,int progress ,int timeRemaining, bool isDelayed)
         {
             Id = id;
             Name = name;
@@ -21,6 +22,7 @@ namespace FlowServer.Models
             Status = status;
             CurrentProduct = currentProduct;
             NextProduct = nextProduct;
+            Progress = progress;
             TimeRemaining = timeRemaining;
             IsDelayed = isDelayed;
         }

@@ -133,12 +133,12 @@ namespace FlowServer.DBServices
                 return cmd.ExecuteNonQuery();
             }
         }
+
         public List<MachineCard> GetMachineCards()
         {
             var machineCards = new List<MachineCard>();
 
-            // First, get the list of all machines
-            List<Machine> machines = ReadMachines(); // You'll need a GetAllMachines() function
+            List<Machine> machines = ReadMachines(); 
 
             foreach (var machine in machines)
             {
@@ -151,6 +151,7 @@ namespace FlowServer.DBServices
                 string nextProduct = null;
                 int timeRemainingSeconds = 0;
                 bool isDelayed = false;
+                int progress = 0;
 
                 using (SqlConnection con = connect("igroup16_test1"))
                 using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("GetTop2TasksByMachine", con, paramDic))
@@ -161,12 +162,15 @@ namespace FlowServer.DBServices
                     {
                         string productName = reader["productName"].ToString();
                         string taskStatus = reader["TaskStatus"].ToString();
+                        DateTime? startTime = reader["startTime"] != DBNull.Value ? Convert.ToDateTime(reader["startTime"]) : (DateTime?)null;
                         DateTime? endTimeEst = reader["endTimeEst"] != DBNull.Value ? Convert.ToDateTime(reader["endTimeEst"]) : (DateTime?)null;
+                        double? processTime = reader["processTime"] != DBNull.Value ? Convert.ToDouble(reader["processTime"]) : (double?)null;
 
                         if (taskIndex == 0) // First task = current product
                         {
                             currentProduct = productName;
 
+                            // Calculate time remaining
                             if (endTimeEst.HasValue)
                             {
                                 var remaining = endTimeEst.Value - DateTime.Now;
@@ -179,6 +183,16 @@ namespace FlowServer.DBServices
                                 {
                                     timeRemainingSeconds = (int)remaining.TotalSeconds;
                                 }
+                            }
+
+                            // Calculate progress
+                            if (startTime.HasValue && processTime.HasValue && processTime.Value > 0)
+                            {
+                                var minutesPassed = (DateTime.Now - startTime.Value).TotalMinutes;
+                                progress = (int)((minutesPassed / processTime.Value) * 100);
+
+                                if (progress < 0) progress = 0;
+                                if (progress > 100) progress = 100;
                             }
                         }
                         else if (taskIndex == 1) // Second task = next product
@@ -199,14 +213,14 @@ namespace FlowServer.DBServices
                     _ => "unknown"
                 };
 
-                // Now create the MachineCard directly
                 var machineCard = new MachineCard(
                     machine.MachineId,
-                    $"{machine.MachineName} {machine.MachineId}",
+                    $"{machine.MachineName}",
                     machine.MachineType,
                     status,
                     currentProduct,
                     nextProduct,
+                    progress,
                     timeRemainingSeconds,
                     isDelayed
                 );
