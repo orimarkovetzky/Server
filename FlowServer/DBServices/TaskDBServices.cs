@@ -123,8 +123,8 @@ namespace FlowServer.DBServices
             var paramDic = new Dictionary<string, object>
     {
         { "@batchId", batchId },
-        { "@machineId", machineId },
-        { "@now", DateTime.Now }
+        { "@machineId", machineId }
+        
     };
 
             using (SqlConnection con = connect("igroup16_test1"))
@@ -140,8 +140,8 @@ namespace FlowServer.DBServices
             var paramDic = new Dictionary<string, object>
     {
         { "@batchId", batchId },
-        { "@machineId", machineId },
-        { "@now", DateTime.Now }
+        { "@machineId", machineId }
+        
     };
 
             using (SqlConnection con = connect("igroup16_test1"))
