@@ -10,6 +10,7 @@ using System.Xml.Linq;
 using FlowServer.Models;
 using Task = FlowServer.Models.Task;
 using MachineCard = FlowServer.Models.MachineCard;
+using System.Dynamic;
 
 namespace FlowServer.DBServices
 {
@@ -261,6 +262,53 @@ namespace FlowServer.DBServices
                 return null; //If machine not found
             }
         }
+
+        public List<dynamic> GetMachineTasksOverview()
+        {
+            var result = new List<dynamic>();
+            var groupedTasks = new Dictionary<int, List<dynamic>>();
+
+            using (SqlConnection con = connect("igroup16_test1"))
+            using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("GetTop2TasksByMachine", con, null))
+            using (SqlDataReader reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    int machineId = reader["machineId"] != DBNull.Value ? Convert.ToInt32(reader["machineId"]) : 0;
+                    string productName = reader["productName"] != DBNull.Value ? reader["productName"].ToString() : null;
+                    DateTime? startTimeEst = reader["startTimeEst"] != DBNull.Value ? Convert.ToDateTime(reader["startTimeEst"]) : (DateTime?)null;
+                    int processTime = reader["processTime"] != DBNull.Value ? Convert.ToInt32(reader["processTime"]) : 0;
+
+                    dynamic task = new ExpandoObject();
+                    task.Name = productName;
+                    task.EstimatedStart = startTimeEst;
+                    task.Duration = processTime;
+
+                    if (!groupedTasks.ContainsKey(machineId))
+                        groupedTasks[machineId] = new List<dynamic>();
+
+                    groupedTasks[machineId].Add(task);
+                }
+            }
+
+            foreach (var entry in groupedTasks)
+            {
+                int machineId = entry.Key;
+                var taskList = entry.Value;
+
+                dynamic machineInfo = new ExpandoObject();
+                machineInfo.Id = machineId;
+                machineInfo.CurrentProduct = taskList.Count > 0 ? taskList[0].Name : null;
+                machineInfo.StartTimeEst = taskList.Count > 0 ? taskList[0].EstimatedStart : (DateTime?)null;
+                machineInfo.ProcessTime = taskList.Count > 0 ? taskList[0].Duration : 0;
+                machineInfo.NextProduct = taskList.Count > 1 ? taskList[1].Name : null;
+
+                result.Add(machineInfo);
+            }
+
+            return result;
+        }
+
 
     }
 }

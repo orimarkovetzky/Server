@@ -52,5 +52,20 @@ namespace FlowServer.Controllers
                 return StatusCode(500, "An error occurred while fetching machine cards: " + ex.Message);
             }
         }
+
+        [HttpGet("Machine2tasks-overview")]
+        public IActionResult GetMachineTasksOverview()
+        {
+            try
+            {
+                var service = new MachineDBServices();
+                var result = service.GetMachineTasksOverview();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
+        }
     }
 }
