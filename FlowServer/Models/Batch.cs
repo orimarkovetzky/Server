@@ -35,6 +35,11 @@ namespace FlowServer.Models
             return dbs.UpdateBatchStatus(batchId, newStatus);
         }
 
+        public int GetProcessTimeMinutes(int productId, int machineType)
+        {
+            BatchDBServices dbs = new BatchDBServices();
+            return dbs.GetProcessTimeMinutes(productId, machineType);
+        }
 
 
 

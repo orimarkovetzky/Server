@@ -111,8 +111,9 @@ namespace FlowServer.DBServices
                         : Convert.ToDateTime(reader["endTimeEst"]);
 
                     string status = reader["status"].ToString();
+                    int processTime= Convert.ToInt32(reader["batchId"]);
 
-                    Task task = new Task(batchId, machineId, estStartTime, estEndTime, status);
+                    Task task = new Task(batchId, machineId, estStartTime, estEndTime,status,processTime);
                     tasks.Add(task);
                 }
             }

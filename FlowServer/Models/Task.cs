@@ -33,16 +33,18 @@ namespace FlowServer.Models
             this.actStartTime = actStartTime;
             this.actEndTime = actEndTime;
             this.status = status;
+            
 
         }
 
-        public Task(int batchId, int machineId, DateTime estStartTime, DateTime estEndTime,string status)
+        public Task(int batchId, int machineId, DateTime estStartTime, DateTime estEndTime,string status,int processTime)
         {
             this.batchId = batchId;
             this.machineId = machineId;
             this.startTimeEst = estStartTime;
             this.endTimeEst = estEndTime;
             this.status = status;
+            this.processTime = processTime;
         }
        
         public Task() { }

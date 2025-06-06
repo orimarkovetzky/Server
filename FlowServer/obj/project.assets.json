@@ -627,23 +627,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Ori\\.nuget\\packages\\": {},
+    "C:\\Users\\orima\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Ori\\Documents\\GitHub\\Server\\FlowServer\\FlowServer.csproj",
+      "projectUniqueName": "C:\\Users\\orima\\source\\repos\\Server\\FlowServer\\FlowServer.csproj",
       "projectName": "FlowServer",
-      "projectPath": "C:\\Users\\Ori\\Documents\\GitHub\\Server\\FlowServer\\FlowServer.csproj",
-      "packagesPath": "C:\\Users\\Ori\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Ori\\Documents\\GitHub\\Server\\FlowServer\\obj\\",
+      "projectPath": "C:\\Users\\orima\\source\\repos\\Server\\FlowServer\\FlowServer.csproj",
+      "packagesPath": "C:\\Users\\orima\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\orima\\source\\repos\\Server\\FlowServer\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\Ori\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\orima\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -670,7 +670,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.200"
+      "SdkAnalysisLevel": "9.0.100"
     },
     "frameworks": {
       "net6.0": {
@@ -710,7 +710,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.101\\RuntimeIdentifierGraph.json"
       }
     }
   }
