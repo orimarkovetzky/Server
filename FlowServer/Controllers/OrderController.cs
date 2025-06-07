@@ -1,17 +1,30 @@
-﻿using System;
-using System.Data;
+﻿using Microsoft.AspNetCore.Mvc;
 using FlowServer.DBServices;
 using FlowServer.Models;
-using Microsoft.AspNetCore.Mvc;
-using System.Data.SqlClient;
 
 namespace FlowServer.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class OrderController : ControllerBase
+    public class OrdersController : ControllerBase
     {
-      
+        private readonly OrderDBServices _service;
 
+        public OrdersController()
+        {
+            _service = new OrderDBServices();
+        }
+
+        // GET api/orders
+        [HttpGet]
+        public ActionResult<List<Order>> GetAllOrders()
+        {
+            var orders = _service.GetAllOrders();
+
+            if (orders == null || !orders.Any())
+                return NotFound("No orders found.");
+
+            return Ok(orders);
+        }
     }
 }

@@ -1,7 +1,6 @@
 ﻿
 
 using System.Data.SqlClient;
-using System.Runtime.CompilerServices;
 
 namespace FlowServer.Models
 {

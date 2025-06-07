@@ -43,5 +43,33 @@ namespace FlowServer.DBServices
             cmd.Parameters.AddWithValue("@supplyDate", supplyDate);
             return Convert.ToInt32(cmd.ExecuteScalar());
         }
+        public List<Order> GetAllOrders()
+        {
+            var orders = new List<Order>();
+
+            using (SqlConnection con = Connect("igroup16_test1"))
+            using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("GetAllOrders", con, null))
+            using (SqlDataReader rdr = cmd.ExecuteReader())
+            {
+                int ordIdIdx = rdr.GetOrdinal("orderID");
+                int custIdIdx = rdr.GetOrdinal("customerID");
+                int orderDateIdx = rdr.GetOrdinal("orderDate");
+                int supplyDateIdx = rdr.GetOrdinal("supplyDate");
+
+                while (rdr.Read())
+                {
+                    var o = new Order
+                    {
+                        OrderId = rdr.GetInt32(ordIdIdx),
+                        CustomerId = rdr.GetInt32(custIdIdx),
+                        OrderDate = rdr.GetDateTime(orderDateIdx),
+                        SupplyDate = rdr.GetDateTime(supplyDateIdx)
+                    };
+                    orders.Add(o);
+                }
+            }
+
+            return orders;
+        }
     }
 }

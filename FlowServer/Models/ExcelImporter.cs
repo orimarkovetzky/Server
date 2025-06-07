@@ -1,5 +1,4 @@
 ﻿using ClosedXML.Excel;
-using FlowServer.DBServices;
 using FlowServer.Models;
 using System.Data.SqlClient;
 using System.Globalization;
@@ -23,7 +22,7 @@ public class ExcelOrderImporter
 
         using var workbook = new XLWorkbook(excelPath);
         var worksheet = workbook.Worksheet(1);
-        var rows = worksheet.RangeUsed().RowsUsed().Skip(1);
+        var rows = worksheet.RangeUsed().RowsUsed().Skip(1); // Skiping the Headers
 
         foreach (var row in rows)
         {
@@ -143,5 +142,3 @@ public class ExcelOrderImporter
     }
 }
 
-// Ensure your Order and Batch classes support overloads for Insert with (SqlConnection, SqlTransaction)
-// And your stored procedure InsertCustomer returns SCOPE_IDENTITY()

@@ -22,7 +22,7 @@ namespace FlowServer.DBServices
 
         }
 
-        public SqlConnection connect(String conString)
+        public SqlConnection Connect(String conString)
         {
 
             // read the connection string from the configuration file
@@ -62,7 +62,7 @@ namespace FlowServer.DBServices
         {
             List<Machine> machines = new List<Machine>();
 
-            using (SqlConnection con = connect("igroup16_test1"))
+            using (SqlConnection con = Connect("igroup16_test1"))
             using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("GetAllMachines", con, null))
             using (SqlDataReader rdr = cmd.ExecuteReader())
             {
@@ -84,6 +84,46 @@ namespace FlowServer.DBServices
             return machines;
         }
 
+        public bool AddMachine(string machineName, int machineType, double setupTime, string imagePath = null)
+        {
+            using (SqlConnection con = Connect("igroup16_test1"))
+            {
+                // prepare parameters for the SP
+                var parameters = new Dictionary<string, object>
+        {
+            { "@MachineName", machineName },
+            { "@MachineType", machineType },
+            { "@SetupTime", setupTime },
+            { "@Status", 0 },                            // default status
+            { "@ImagePath", (object)imagePath ?? DBNull.Value }
+        };
+
+                // call the stored procedure
+                using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("AddMachine", con, parameters))
+                {
+                    int rowsAffected = cmd.ExecuteNonQuery();
+                    return rowsAffected > 0;  // true if insert succeeded
+                }
+            }
+        }
+        public bool DeleteMachine(string machineName)
+        {
+            using (SqlConnection con = Connect("igroup16_test1"))
+            {
+                var parameters = new Dictionary<string, object>
+        {
+            
+            { "@MachineName", machineName }
+        };
+
+                using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("DeleteMachineByName", con, parameters))
+                {
+                    int rowsAffected = cmd.ExecuteNonQuery();
+                    return rowsAffected > 0;
+                }
+            }
+        }
+
         public List<Task> GetMachineQueue(int id)
         {
             var paramDic = new Dictionary<string, object>
@@ -93,7 +133,7 @@ namespace FlowServer.DBServices
 
             List<Task> tasks = new List<Task>();
 
-            using (SqlConnection con = connect("igroup16_test1"))
+            using (SqlConnection con = Connect("igroup16_test1"))
             using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("GetMachineQueue", con, paramDic))
             using (SqlDataReader reader = cmd.ExecuteReader())
             {
@@ -129,7 +169,7 @@ namespace FlowServer.DBServices
 
             };
 
-            using (SqlConnection con = connect("igroup16_test1"))
+            using (SqlConnection con = Connect("igroup16_test1"))
             using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("UpdateMachineStatus", con, paramDic))
             {
                 return cmd.ExecuteNonQuery();
@@ -155,7 +195,7 @@ namespace FlowServer.DBServices
                 bool isDelayed = false;
                 int progress = 0;
 
-                using (SqlConnection con = connect("igroup16_test1"))
+                using (SqlConnection con = Connect("igroup16_test1"))
                 using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("GetTop2TasksByMachine", con, paramDic))
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
@@ -237,15 +277,15 @@ namespace FlowServer.DBServices
 
 
 
-        public Machine findMachine(int machineId)
+        public Machine FindMachine(int machineId)
         {
             var paramDic = new Dictionary<string, object>
     {
         { "@MachineID", machineId }
     };
 
-            using (SqlConnection con = connect("igroup16_test1"))
-            using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("FindMachineById", con, paramDic))
+            using (SqlConnection con = Connect("igroup16_test1"))
+            using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("GetMachineById", con, paramDic))
             using (SqlDataReader rdr = cmd.ExecuteReader())
             {
                 if (rdr.Read())
@@ -269,7 +309,7 @@ namespace FlowServer.DBServices
             var result = new List<dynamic>();
             var groupedTasks = new Dictionary<int, List<dynamic>>();
 
-            using (SqlConnection con = connect("igroup16_test1"))
+            using (SqlConnection con = Connect("igroup16_test1"))
             using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("GetTop2TasksByMachine", con, null))
             using (SqlDataReader reader = cmd.ExecuteReader())
             {

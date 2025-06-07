@@ -202,20 +202,18 @@ public class BatchDBServices
     public int GetProcessTimeMinutes(int productId, int machineType)
     {
         using (SqlConnection con = connect("igroup16_test1"))
+        using (SqlCommand cmd = new SqlCommand("GetProcessTime", con))
         {
-            using (SqlCommand cmd = new SqlCommand("SELECT processTime FROM ProductSettings WHERE productid = @productId AND machineType = @machineType", con))
-            {
-                cmd.Parameters.AddWithValue("@productId", productId);
-                cmd.Parameters.AddWithValue("@machineType", machineType);
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@productId", productId);
+            cmd.Parameters.AddWithValue("@machineType", machineType);
 
-                object result = cmd.ExecuteScalar();
-
-                if (result != null)
-                    return Convert.ToInt32(result);
-                else
-                    throw new Exception($"No process time found for product {productId} and machine type {machineType}");
-            }
-        } 
+            object result = cmd.ExecuteScalar();
+            if (result != null && result != DBNull.Value)
+                return Convert.ToInt32(result);
+            else
+                throw new Exception($"No process time found for product {productId} and machine type {machineType}");
+        }
     }
 
 }

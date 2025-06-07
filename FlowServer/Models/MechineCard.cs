@@ -1,5 +1,4 @@
-﻿using System.Data.SqlClient;
-
+﻿
 namespace FlowServer.Models
 {
     public class MachineCard

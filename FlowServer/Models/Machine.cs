@@ -12,7 +12,7 @@ namespace FlowServer.Models
         public string ImagePath { get; set; }
 
 
-        public Machine(int machineId, string machineName, int machineType, float setupTime, int status, string imagePath)
+        public Machine(int machineId, string machineName, int machineType, double setupTime, int status, string imagePath)
         {
             MachineId = machineId;
             MachineName = machineName;
@@ -25,7 +25,16 @@ namespace FlowServer.Models
         {
 
         }
-
+        public bool AddMachine(string machineName, int machineType, double setupTime, string imagePath = null)
+        {
+            MachineDBServices dbs = new MachineDBServices();
+            return dbs.AddMachine(machineName, machineType, setupTime, imagePath);
+        }
+        public bool DeleteMachine(string machineName)
+        {
+            MachineDBServices dbs = new MachineDBServices();
+            return dbs.DeleteMachine(machineName);
+        }
 
         public static List<Machine> ReadMachines()
         {
@@ -42,7 +51,7 @@ namespace FlowServer.Models
         public static Machine FindMachine(int machineId)
         {
             MachineDBServices dbs = new MachineDBServices();
-            return dbs.findMachine(machineId);
+            return dbs.FindMachine(machineId);
         }
     }
 }
