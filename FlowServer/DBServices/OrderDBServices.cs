@@ -1,12 +1,12 @@
 ﻿using System.Data.SqlClient;
-using System.Data;
 using FlowServer.Models;
+using FlowServer.DBServices;
 
 namespace FlowServer.DBServices
 {
     public class OrderDBServices
     {
-        public SqlConnection connect(String conString)
+        public SqlConnection Connect(String conString)
         {
             // read the connection string from the configuration file
             IConfigurationRoot configuration = new ConfigurationBuilder()
@@ -34,20 +34,14 @@ namespace FlowServer.DBServices
             return cmd;
         }
 
-        public int InsertOrder(Order order)
+        public int InsertOrder(int customerId, DateTime orderDate, DateTime supplyDate, SqlConnection con, SqlTransaction tx)
         {
-            var paramDic = new Dictionary<string, object>
-    {
-        { "@customerID", order.CustomerId },
-        { "@orderDate", order.OrderDate },
-        { "@supplyDate", order.SupplyDate }
-    };
-
-            using (SqlConnection con = connect("DefaultConnection"))
-            using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("InsertOrder", con, paramDic))
-            {
-                return Convert.ToInt32(cmd.ExecuteScalar()); // returns new OrderID 
-            }
+            using var cmd = new SqlCommand("InsertOrder", con, tx);
+            cmd.CommandType = System.Data.CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@customerID", customerId);
+            cmd.Parameters.AddWithValue("@orderDate", orderDate);
+            cmd.Parameters.AddWithValue("@supplyDate", supplyDate);
+            return Convert.ToInt32(cmd.ExecuteScalar());
         }
     }
 }

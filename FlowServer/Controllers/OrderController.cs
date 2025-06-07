@@ -1,7 +1,9 @@
-﻿using FlowServer.DBServices;
+﻿using System;
+using System.Data;
+using FlowServer.DBServices;
 using FlowServer.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Data.SqlClient;
 
 namespace FlowServer.Controllers
 {
@@ -9,28 +11,7 @@ namespace FlowServer.Controllers
     [Route("api/[controller]")]
     public class OrderController : ControllerBase
     {
-        [HttpPost("AddOrder")]
-        public IActionResult AddOrder([FromBody] Order order)
-        {
-            try
-            {
-                OrderDBServices orderDB = new OrderDBServices();
-                BatchDBServices batchDB = new BatchDBServices();
+      
 
-                int newOrderId = orderDB.InsertOrder(order);
-
-                foreach (Batch batch in order.Batches)
-                {
-                    batch.OrderId = newOrderId;
-                    batchDB.InsertBatch(batch);
-                }
-
-                return Ok(new { OrderID = newOrderId });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error inserting order and batches: {ex.Message}");
-            }
-        }
     }
 }

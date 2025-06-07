@@ -1,5 +1,8 @@
 ﻿
 
+using System.Data.SqlClient;
+using System.Runtime.CompilerServices;
+
 namespace FlowServer.Models
 {
     public class Batch
@@ -11,6 +14,7 @@ namespace FlowServer.Models
         public int Quantity { get; set; }
         public string Status { get; set; } = string.Empty;
         public int ProductType { get; set; } // 0 for O-Ring, 1 for Fingers
+        
         public Batch(int batchId, int orderId, int productId, int quantity, string status, int productType) //Full constructor 
         {
             BatchId = batchId;
@@ -20,9 +24,7 @@ namespace FlowServer.Models
             Status = status;
             ProductType = productType; 
 
-
         }
-
         public Batch() { } // default constructor 
         public static Batch FindBatch(int batchid)
         {
@@ -40,7 +42,12 @@ namespace FlowServer.Models
             BatchDBServices dbs = new BatchDBServices();
             return dbs.GetProcessTimeMinutes(productId, machineType);
         }
-
+        public void InsertBatch(int orderId, int productId, int quantity, SqlConnection con, SqlTransaction tx)
+        {
+            BatchDBServices dbs = new BatchDBServices();
+            dbs.InsertBatch(orderId, productId, quantity,con, tx);
+           
+        }
 
 
     }
