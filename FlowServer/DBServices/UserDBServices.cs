@@ -22,14 +22,14 @@ namespace FlowServer.DBServices
         }
 
 
-        private SqlCommand CreateCommandWithTextQuery(string sqlSP, SqlConnection con, Dictionary<string, object> paramDic)
+        private SqlCommand CreateCommandWithSP(string sqlSP, SqlConnection con, Dictionary<string, object> paramDic)
         {
             SqlCommand cmd = new SqlCommand
             {
                 Connection = con,
                 CommandText = sqlSP,
                 CommandTimeout = 10, // optional
-                CommandType = CommandType.Text // <-- this is the key difference
+                CommandType = CommandType.StoredProcedure
             };
 
             if (paramDic != null)
@@ -51,7 +51,7 @@ namespace FlowServer.DBServices
             try
             {
                 using (SqlConnection con = connect("igroup16_test1")) // your connection function
-                using (SqlCommand cmd = CreateCommandWithTextQuery(storedProcedureName, con, null))
+                using (SqlCommand cmd = CreateCommandWithSP(storedProcedureName, con, null))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
 
@@ -85,34 +85,21 @@ namespace FlowServer.DBServices
             return users;
         }
 
-        public int CreateUser(User user)
+        public void InsertUser(User user)
         {
-            int newUserId = 0;
+            Dictionary<string, object> paramDic = new Dictionary<string, object>
+        {
+            { "@username", user.Name },
+            { "@isManager", user.IsManager },
+            { "@password", user.Password },
+            { "@email", user.Email }
+        };
 
-            try
+            using (SqlConnection con = connect("igroup16_test1"))
+            using (SqlCommand cmd = CreateCommandWithSP("InsertUser", con, paramDic))
             {
-                using (SqlConnection con = connect("igroup16_test1"))
-                using (SqlCommand cmd = new SqlCommand("dbo.CreateUser", con))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@UserName", user.name);
-                    cmd.Parameters.AddWithValue("@Password", user.Password);
-                    cmd.Parameters.AddWithValue("@IsManager", user.IsManager);
-
-                    // ExecuteScalar will return the single value SELECTed by the SP:
-                    object result = cmd.ExecuteScalar();
-                    if (result != null)
-                    {
-                        newUserId = Convert.ToInt32(result);
-                    }
-                }
+                cmd.ExecuteNonQuery();
             }
-            catch (Exception ex)
-            {
-                // Optionally log the error.
-                throw; // Use 'throw' to preserve the original stack trace.
-            }
-            return newUserId;
         }
 
     }

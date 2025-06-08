@@ -39,6 +39,12 @@ namespace FlowServer.Models
 
         }
 
+        public static void CreateUser(User user)
+        {
+            UserDBServices dbs = new UserDBServices();
+            dbs.InsertUser(user);
+        }
+
         public User(string name, bool isManager, string password)
         {
             

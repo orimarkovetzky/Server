@@ -1,6 +1,7 @@
 ﻿
 
 using System.Data.SqlClient;
+using FlowServer.DBServices;
 
 namespace FlowServer.Models
 {
@@ -48,7 +49,17 @@ namespace FlowServer.Models
            
         }
 
+        public static int GetBatchQueueCount()
+        {
+            BatchDBServices dbs = new BatchDBServices();
+            return dbs.GetBatchQueueCount();
+        }
 
+        public static int GetDelayedBatchCount()
+        {
+            BatchDBServices dbs = new BatchDBServices();
+            return dbs.GetDelayedBatchCount();
+        }
     }
 
 }

@@ -105,5 +105,19 @@ namespace FlowServer.Controllers
             else
                 return NotFound($"machine named {name} were not found.");
         }
+
+        [HttpGet("NonOperationalMachines")]
+        public ActionResult<int> GetNonOperationalMachines()
+        {
+            try
+            {
+                int count = Machine.GetNonOperationalMachineCount();
+                return Ok(count);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Error: " + ex.Message);
+            }
+        }
     }
 }

@@ -216,4 +216,34 @@ public class BatchDBServices
         }
     }
 
+    public int GetBatchQueueCount()
+    {
+        using (SqlConnection con = connect("igroup16_test1"))
+        using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("GetBatchQueueCount", con, null))
+        {
+            using (SqlDataReader rdr = cmd.ExecuteReader())
+            {
+                if (rdr.Read())
+                    return Convert.ToInt32(rdr["BatchCount"]);
+            }
+        }
+
+        return 0;
+    }
+
+    public int GetDelayedBatchCount()
+    {
+        using (SqlConnection con = connect("igroup16_test1"))
+        using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("GetDelayedBatchCount", con, null))
+        {
+            using (SqlDataReader rdr = cmd.ExecuteReader())
+            {
+                if (rdr.Read())
+                    return Convert.ToInt32(rdr["DelayedBatchCount"]);
+            }
+        }
+
+        return 0;
+    }
+
 }

@@ -88,6 +88,34 @@ namespace FlowServer.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+        [HttpGet("BatchQueueCount")]
+        public ActionResult<int> GetBatchQueueCount()
+        {
+            try
+            {
+                int count = Batch.GetBatchQueueCount();
+                return Ok(count);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Error: " + ex.Message);
+            }
+        }
+
+        [HttpGet("DelayedBatches")]
+        public ActionResult<int> GetDelayedBatches()
+        {
+            try
+            {
+                int count = Batch.GetDelayedBatchCount();
+                return Ok(count);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Error: " + ex.Message);
+            }
+        }
     }
 }
 

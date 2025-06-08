@@ -2,7 +2,7 @@
 using FlowServer.Models;
 using Microsoft.AspNetCore.Mvc;
 using FlowServer.DBServices;
-
+using user = FlowServer.Models.User;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -12,7 +12,7 @@ public class UsersController : ControllerBase
     public ActionResult GetAllUsers()
     {
         UserDBServices dbs = new UserDBServices();
-        List<User> users = dbs.ReadUsers();
+        List<user> users = dbs.ReadUsers();
         if (users != null && users.Count > 0)
             return Ok(users);
         else
@@ -20,18 +20,18 @@ public class UsersController : ControllerBase
     }
 
 
-    [HttpPost]
-    public IActionResult Post(string name, bool isManager, string password)
+  
+    [HttpPost("CreateUser")]
+    public IActionResult CreateUser([FromBody] user newUser)
     {
-        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(password))
-            return BadRequest("Name or Password missing.");
-
-        var userRequest = new User(name, isManager, password);
-
-        UserDBServices db = new UserDBServices();
-        int newId = db.CreateUser(userRequest);
-        userRequest.Id = newId;
-
-        return Ok(userRequest);
+        try
+        {
+            user.CreateUser(newUser);
+            return Ok("User created successfully.");
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "Error: " + ex.Message);
+        }
     }
 }

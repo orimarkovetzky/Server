@@ -359,6 +359,20 @@ namespace FlowServer.DBServices
             return result;
         }
 
+        public int GetNonOperationalMachineCount()
+        {
+            using (SqlConnection con = Connect("igroup16_test1"))
+            using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("GetNonOperationalMachineCount", con, null))
+            {
+                using (SqlDataReader rdr = cmd.ExecuteReader())
+                {
+                    if (rdr.Read())
+                        return Convert.ToInt32(rdr["NonOperationalCount"]);
+                }
+            }
+
+            return 0;
+        }
 
     }
 }

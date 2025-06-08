@@ -53,5 +53,11 @@ namespace FlowServer.Models
             MachineDBServices dbs = new MachineDBServices();
             return dbs.FindMachine(machineId);
         }
+
+        public static int GetNonOperationalMachineCount()
+        {
+            MachineDBServices dbs = new MachineDBServices();
+            return dbs.GetNonOperationalMachineCount();
+        }
     }
 }

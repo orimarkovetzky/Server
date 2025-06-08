@@ -58,11 +58,11 @@ namespace FlowServer.Models
         {
             if (productType == 0)
             {
-                return new List<int> { 1, 2, 3 };
+                return new List<int> { 2,3 };
             }
             else if (productType == 1)
             {
-                return new List<int> { 1, 3 };
+                return new List<int> { 1,2,3 };
             }
             return new List<int>();
         }
