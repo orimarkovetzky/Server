@@ -142,7 +142,8 @@ namespace FlowServer.DBServices
                                 type = Convert.ToInt32(reader["type"]),
                                 color = reader["color"].ToString(),
                                 flow = Convert.ToInt32(reader["flow"]),
-                                temp = Convert.ToInt32(reader["temperature"])
+                                temp = Convert.ToInt32(reader["temperature"]),
+                                status = reader["status"].ToString()
                             };
 
                             tasks.Add(taskObj);
