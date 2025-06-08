@@ -8,6 +8,12 @@ namespace FlowServer.Controllers
     [ApiController]
     public class MachineController : Controller
     {
+        private readonly MachineDBServices _service;
+
+        public MachineController()
+        {
+            _service = new MachineDBServices();
+        }
         [HttpGet]
         public IEnumerable<Machine> Get()
         {
@@ -66,6 +72,38 @@ namespace FlowServer.Controllers
             {
                 return StatusCode(500, $"An error occurred: {ex.Message}");
             }
+        }
+
+
+
+        [HttpPost]
+        public ActionResult AddMachine([FromBody] Machine dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.MachineName))
+                return BadRequest("MachineName is required.");
+
+            bool created = _service.AddMachine(
+                machineName: dto.MachineName,
+                machineType: dto.MachineType,
+                setupTime: dto.SetupTime,
+                imagePath: dto.ImagePath
+            );
+
+            if (created)
+                return Ok(new { message = "Machine added successfully." });
+            else
+                return StatusCode(500, "Failed to add machine.");
+        }
+
+        [HttpDelete("{name}")]
+        public IActionResult DeleteMachine(string name)
+        {
+            bool deleted = _service.DeleteMachine(name);
+
+            if (deleted)
+                return Ok(new { message = $"{name} Machine Deleted Successfully." });
+            else
+                return NotFound($"machine named {name} were not found.");
         }
     }
 }

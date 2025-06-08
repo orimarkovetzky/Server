@@ -1,36 +1,30 @@
-﻿using FlowServer.DBServices;
+﻿using Microsoft.AspNetCore.Mvc;
+using FlowServer.DBServices;
 using FlowServer.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 
 namespace FlowServer.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class OrderController : ControllerBase
+    public class OrdersController : ControllerBase
     {
-        [HttpPost("AddOrder")]
-        public IActionResult AddOrder([FromBody] Order order)
+        private readonly OrderDBServices _service;
+
+        public OrdersController()
         {
-            try
-            {
-                OrderDBServices orderDB = new OrderDBServices();
-                BatchDBServices batchDB = new BatchDBServices();
+            _service = new OrderDBServices();
+        }
 
-                int newOrderId = orderDB.InsertOrder(order);
+        // GET api/orders
+        [HttpGet]
+        public ActionResult<List<Order>> GetAllOrders()
+        {
+            var orders = _service.GetAllOrders();
 
-                foreach (Batch batch in order.Batches)
-                {
-                    batch.OrderId = newOrderId;
-                    batchDB.InsertBatch(batch);
-                }
+            if (orders == null || !orders.Any())
+                return NotFound("No orders found.");
 
-                return Ok(new { OrderID = newOrderId });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error inserting order and batches: {ex.Message}");
-            }
+            return Ok(orders);
         }
     }
 }

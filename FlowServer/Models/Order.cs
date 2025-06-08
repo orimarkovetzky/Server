@@ -1,4 +1,6 @@
-﻿namespace FlowServer.Models
+﻿using System.Data.SqlClient;
+using FlowServer.DBServices;
+namespace FlowServer.Models
 {
     public class Order
     {
@@ -17,5 +19,19 @@
             OrderDate = orderDate;
             SupplyDate = supplyDate;
         }
+
+        public static List<Order> GetAllOrders()
+        {
+            OrderDBServices dbs = new OrderDBServices();
+            return dbs.GetAllOrders();
+        }
+
+        public int InsertOrder(int customerId, DateTime orderDate, DateTime supplyDate, SqlConnection con, SqlTransaction tx)
+        { 
+            OrderDBServices dbs = new OrderDBServices();
+            return dbs.InsertOrder(customerId, orderDate, supplyDate,con, tx);
+        
+        }
+
     }
 }

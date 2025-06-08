@@ -11,6 +11,7 @@ using FlowServer.Models;
 using FlowServer.DBServices;
 using Task = FlowServer.Models.Task;
 using System.Dynamic;
+using DocumentFormat.OpenXml.Drawing.Charts;
 
 
 public class BatchDBServices
@@ -75,7 +76,7 @@ public class BatchDBServices
         var batchViews = new List<BatchView>();
 
         using (SqlConnection con = connect("igroup16_test1"))
-        using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("SPGetAllBatches", con,null))
+        using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("SPGetAllBatches", con, null))
         using (SqlDataReader reader = cmd.ExecuteReader())
         {
             while (reader.Read())
@@ -117,7 +118,7 @@ public class BatchDBServices
         ))
         using (SqlDataReader reader = cmd.ExecuteReader())
         {
-          
+
             while (reader.Read())
             {
                 var task = new TaskView
@@ -185,22 +186,34 @@ public class BatchDBServices
         }
     }
 
-    public void InsertBatch(Batch batch)
+    public void InsertBatch(int orderId, int productId, int quantity, SqlConnection con, SqlTransaction tx)
     {
-        var paramDic = new Dictionary<string, object>
-    {
-        { "@orderID", batch.OrderId },
-        { "@productID", batch.ProductId },
-        { "@quantity", batch.Quantity },
-        { "@status", "Pending" }
-    };
+        using var cmd = new SqlCommand("InsertBatchToOrder", con, tx);
+        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+        cmd.Parameters.AddWithValue("@orderID", orderId);
+        cmd.Parameters.AddWithValue("@productID", productId);
+        cmd.Parameters.AddWithValue("@quantity", quantity);
+        cmd.Parameters.AddWithValue("@status", "Pending");
+        cmd.ExecuteNonQuery();
+    }
 
-        using (SqlConnection con = connect("DefaultConnection"))
-        using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("InsertBatchToOrder", con, paramDic))
+
+
+    public int GetProcessTimeMinutes(int productId, int machineType)
+    {
+        using (SqlConnection con = connect("igroup16_test1"))
+        using (SqlCommand cmd = new SqlCommand("GetProcessTime", con))
         {
-            cmd.ExecuteNonQuery();
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@productId", productId);
+            cmd.Parameters.AddWithValue("@machineType", machineType);
+
+            object result = cmd.ExecuteScalar();
+            if (result != null && result != DBNull.Value)
+                return Convert.ToInt32(result);
+            else
+                throw new Exception($"No process time found for product {productId} and machine type {machineType}");
         }
     }
 
- 
 }

@@ -1,6 +1,4 @@
-﻿using System.Reflection.PortableExecutable;
-using System;
-using FlowServer.DBServices;
+﻿using FlowServer.DBServices;
 namespace FlowServer.Models
 {
     public class Task
@@ -33,16 +31,18 @@ namespace FlowServer.Models
             this.actStartTime = actStartTime;
             this.actEndTime = actEndTime;
             this.status = status;
+            
 
         }
 
-        public Task(int batchId, int machineId, DateTime estStartTime, DateTime estEndTime,string status)
+        public Task(int batchId, int machineId, DateTime estStartTime, DateTime estEndTime,string status,int processTime)
         {
             this.batchId = batchId;
             this.machineId = machineId;
             this.startTimeEst = estStartTime;
             this.endTimeEst = estEndTime;
             this.status = status;
+            this.processTime = processTime;
         }
        
         public Task() { }

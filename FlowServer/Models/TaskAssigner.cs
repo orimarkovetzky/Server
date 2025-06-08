@@ -42,9 +42,10 @@ namespace FlowServer.Models
 
                 DateTime startTimeEst = (machineAvailableTime > currentBatchTime) ? machineAvailableTime : currentBatchTime;
 
-                // Step 5: Define estimated processing time (can be dynamic later)
-                TimeSpan processDuration = TimeSpan.FromHours(1); // Placeholder - you can adjust based on product settings later
-                DateTime endTimeEst = startTimeEst.Add(processDuration);
+                int processMinutes = batch.GetProcessTimeMinutes(batch.ProductId, machineType);
+                TimeSpan processDuration = TimeSpan.FromMinutes(processMinutes);
+                TimeSpan delayBuffer = TimeSpan.FromMinutes(1);
+                DateTime endTimeEst = startTimeEst.Add(processDuration).Add(delayBuffer);
 
                 // Step 6: Schedule the task in DB
                 taskService.ScheduleTask(batch.BatchId, bestMachineId, userId,startTimeEst, endTimeEst);

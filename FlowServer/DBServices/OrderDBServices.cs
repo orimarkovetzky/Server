@@ -1,12 +1,12 @@
 ﻿using System.Data.SqlClient;
-using System.Data;
 using FlowServer.Models;
+using FlowServer.DBServices;
 
 namespace FlowServer.DBServices
 {
     public class OrderDBServices
     {
-        public SqlConnection connect(String conString)
+        public SqlConnection Connect(String conString)
         {
             // read the connection string from the configuration file
             IConfigurationRoot configuration = new ConfigurationBuilder()
@@ -34,20 +34,42 @@ namespace FlowServer.DBServices
             return cmd;
         }
 
-        public int InsertOrder(Order order)
+        public int InsertOrder(int customerId, DateTime orderDate, DateTime supplyDate, SqlConnection con, SqlTransaction tx)
         {
-            var paramDic = new Dictionary<string, object>
-    {
-        { "@customerID", order.CustomerId },
-        { "@orderDate", order.OrderDate },
-        { "@supplyDate", order.SupplyDate }
-    };
+            using var cmd = new SqlCommand("InsertOrder", con, tx);
+            cmd.CommandType = System.Data.CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@customerID", customerId);
+            cmd.Parameters.AddWithValue("@orderDate", orderDate);
+            cmd.Parameters.AddWithValue("@supplyDate", supplyDate);
+            return Convert.ToInt32(cmd.ExecuteScalar());
+        }
+        public List<Order> GetAllOrders()
+        {
+            var orders = new List<Order>();
 
-            using (SqlConnection con = connect("DefaultConnection"))
-            using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("InsertOrder", con, paramDic))
+            using (SqlConnection con = Connect("igroup16_test1"))
+            using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("GetAllOrders", con, null))
+            using (SqlDataReader rdr = cmd.ExecuteReader())
             {
-                return Convert.ToInt32(cmd.ExecuteScalar()); // returns new OrderID 
+                int ordIdIdx = rdr.GetOrdinal("orderID");
+                int custIdIdx = rdr.GetOrdinal("customerID");
+                int orderDateIdx = rdr.GetOrdinal("orderDate");
+                int supplyDateIdx = rdr.GetOrdinal("supplyDate");
+
+                while (rdr.Read())
+                {
+                    var o = new Order
+                    {
+                        OrderId = rdr.GetInt32(ordIdIdx),
+                        CustomerId = rdr.GetInt32(custIdIdx),
+                        OrderDate = rdr.GetDateTime(orderDateIdx),
+                        SupplyDate = rdr.GetDateTime(supplyDateIdx)
+                    };
+                    orders.Add(o);
+                }
             }
+
+            return orders;
         }
     }
 }
