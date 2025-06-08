@@ -1,6 +1,7 @@
 ﻿using System.Data.SqlClient;
+using System.Dynamic;
 using FlowServer.Models;
-using FlowServer.DBServices;
+
 
 namespace FlowServer.DBServices
 {
@@ -43,33 +44,54 @@ namespace FlowServer.DBServices
             cmd.Parameters.AddWithValue("@supplyDate", supplyDate);
             return Convert.ToInt32(cmd.ExecuteScalar());
         }
+
+
+
         public List<Order> GetAllOrders()
         {
-            var orders = new List<Order>();
+            // temporary lookup by OrderId
+            var dict = new Dictionary<int, Order>();
 
             using (SqlConnection con = Connect("igroup16_test1"))
             using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("GetAllOrders", con, null))
-            using (SqlDataReader rdr = cmd.ExecuteReader())
+            using (SqlDataReader r = cmd.ExecuteReader())
             {
-                int ordIdIdx = rdr.GetOrdinal("orderID");
-                int custIdIdx = rdr.GetOrdinal("customerID");
-                int orderDateIdx = rdr.GetOrdinal("orderDate");
-                int supplyDateIdx = rdr.GetOrdinal("supplyDate");
-
-                while (rdr.Read())
+                while (r.Read())
                 {
-                    var o = new Order
+                    int orderId = r.GetInt32(r.GetOrdinal("orderID"));
+                    int customerId = r.GetInt32(r.GetOrdinal("customerID"));
+                    DateTime od = r.GetDateTime(r.GetOrdinal("orderDate"));
+                    DateTime sd = r.GetDateTime(r.GetOrdinal("supplyDate"));
+
+                    // get or create the Order
+                    if (!dict.TryGetValue(orderId, out var order))
                     {
-                        OrderId = rdr.GetInt32(ordIdIdx),
-                        CustomerId = rdr.GetInt32(custIdIdx),
-                        OrderDate = rdr.GetDateTime(orderDateIdx),
-                        SupplyDate = rdr.GetDateTime(supplyDateIdx)
+                        order = new Order(orderId, customerId, od, sd)
+                        {
+                            Batches = new List<Batch>()
+                        };
+                        dict[orderId] = order;
+                    }
+
+                    // read the Batch fields
+                    var batch = new Batch
+                    {
+                        BatchId = r.GetInt32(r.GetOrdinal("batchID")),
+                        OrderId = orderId,
+                        ProductId = r.GetInt32(r.GetOrdinal("productID")),
+                        Quantity = r.GetInt32(r.GetOrdinal("quantity")),
+                        Status = r.GetString(r.GetOrdinal("status"))
+           
                     };
-                    orders.Add(o);
+
+                    order.Batches.Add(batch);
                 }
             }
 
-            return orders;
+            // return the grouped orders
+            return dict.Values.ToList();
         }
+
     }
+
 }

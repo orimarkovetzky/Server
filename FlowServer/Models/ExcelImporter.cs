@@ -15,14 +15,11 @@ public class ExcelOrderImporter
     public void ImportOrdersFromExcel(string excelPath)
     {
         var customerMap = new Dictionary<string, int>();
-        var customerRefMap = new Dictionary<string, string>(); // name => refKey
-        var tempCustomers = new List<string>();
-        var tempOrders = new List<(string RefKey, DateTime OrderDate, DateTime SupplyDate)>();
-        var tempBatches = new List<(string RefKey, int ProductId, int Quantity)>();
+        var tempRows = new List<(string RefKey, string CustomerName, DateTime OrderDate, DateTime SupplyDate, int ProductId, int Quantity)>();
 
         using var workbook = new XLWorkbook(excelPath);
         var worksheet = workbook.Worksheet(1);
-        var rows = worksheet.RangeUsed().RowsUsed().Skip(1); // Skiping the Headers
+        var rows = worksheet.RangeUsed().RowsUsed().Skip(1);
 
         foreach (var row in rows)
         {
@@ -55,64 +52,64 @@ public class ExcelOrderImporter
             if (quantity <= 0)
                 throw new Exception($"❌ Quantity must be greater than 0 (row {row.RowNumber()})");
 
-            int customerId;
             string refKey;
-
             if (!string.IsNullOrWhiteSpace(customerIdStr))
             {
-                if (!int.TryParse(customerIdStr, out customerId))
+                if (!int.TryParse(customerIdStr, out int custId))
                     throw new Exception($"❌ Invalid customerID in row {row.RowNumber()}, got '{customerIdStr}'");
-                if (!CustomerExists(customerId))
-                    throw new Exception($"❌ Customer ID {customerId} not found (row {row.RowNumber()})");
-
-                refKey = customerId.ToString();
+                if (!CustomerExists(custId))
+                    throw new Exception($"❌ Customer ID {custId} not found (row {row.RowNumber()})");
+                refKey = custId.ToString();
+                customerMap[refKey] = custId;
             }
             else
             {
                 if (string.IsNullOrWhiteSpace(customerName))
                     throw new Exception($"❌ Row {row.RowNumber()} must have either customerID or customerName.");
-
-                if (!customerMap.ContainsKey(customerName))
-                {
-                    customerMap[customerName] = -1; // reserve spot
-                    customerRefMap[customerName] = $"NEW_{customerMap.Count}";
-                    tempCustomers.Add(customerName);
-                }
-
-                refKey = customerRefMap[customerName];
+                refKey = $"NEW_{customerName.ToLower()}";
+                if (!customerMap.ContainsKey(refKey))
+                    customerMap[refKey] = -1; // placeholder
             }
 
-            tempOrders.Add((refKey, orderDate, supplyDate));
-            tempBatches.Add((refKey, productId, quantity));
+            tempRows.Add((refKey, customerName, orderDate, supplyDate, productId, quantity));
         }
 
-        var finalCustomerIds = new Dictionary<string, int>();
         using var con = new SqlConnection(_connectionString);
         con.Open();
         using var tx = con.BeginTransaction();
 
         try
         {
-            foreach (var name in tempCustomers)
+            // Insert new customers
+            foreach (var key in customerMap.Keys.ToList())
             {
-                int id = InsertCustomer(name, con, tx);
-                finalCustomerIds[customerRefMap[name]] = id;
+                if (key.StartsWith("NEW_"))
+                {
+                    string name = key.Substring(4);
+                    int newId = InsertCustomer(name, con, tx);
+                    customerMap[key] = newId;
+                }
             }
 
-            var orderIds = new Dictionary<string, int>();
-            foreach (var order in tempOrders)
+            // Group by logic depending on whether new or existing customer
+            var orderMap = new Dictionary<string, int>();
+            foreach (var row in tempRows)
             {
-                int custId = order.RefKey.StartsWith("NEW_") ? finalCustomerIds[order.RefKey] : int.Parse(order.RefKey);
-                var newOrder = new Order { CustomerId = custId, OrderDate = order.OrderDate, SupplyDate = order.SupplyDate };
-                int orderId = newOrder.InsertOrder(newOrder.CustomerId, newOrder.OrderDate, newOrder.SupplyDate, con, tx);
-                orderIds[order.RefKey] = orderId;
-            }
+                int customerId = customerMap[row.RefKey];
+                string orderKey = row.RefKey.StartsWith("NEW_")
+     ? $"{row.RefKey}|{row.OrderDate:dd-MM-yyyy}|{row.SupplyDate:dd-MM-yyyy}"
+     : $"{customerId}|{row.OrderDate:dd-MM-yyyy}|{row.SupplyDate:dd-MM-yyyy}";
+            
+                if (!orderMap.ContainsKey(orderKey))
+                {
+                    var newOrder = new Order { CustomerId = customerId, OrderDate = row.OrderDate, SupplyDate = row.SupplyDate };
+                    int orderId = newOrder.InsertOrder(customerId, row.OrderDate, row.SupplyDate, con, tx);
+                    orderMap[orderKey] = orderId;
+                }
 
-            foreach (var batch in tempBatches)
-            {
-                int orderId = orderIds[batch.RefKey];
-                var newBatch = new Batch { OrderId = orderId, ProductId = batch.ProductId, Quantity = batch.Quantity };
-                newBatch.InsertBatch(newBatch.OrderId,newBatch.ProductId,newBatch.Quantity,con, tx);
+                int assignedOrderId = orderMap[orderKey];
+                var newBatch = new Batch { OrderId = assignedOrderId, ProductId = row.ProductId, Quantity = row.Quantity };
+                newBatch.InsertBatch(newBatch.OrderId, newBatch.ProductId, newBatch.Quantity, con, tx);
             }
 
             tx.Commit();
@@ -141,4 +138,3 @@ public class ExcelOrderImporter
         return Convert.ToInt32(cmd.ExecuteScalar());
     }
 }
-
