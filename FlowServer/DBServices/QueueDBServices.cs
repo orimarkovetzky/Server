@@ -90,6 +90,7 @@ namespace FlowServer.DBServices
                         currentNitrogen,
                         nextTemp,
                         nextNitrogen,
+                        status=machine.Status,
                         Tasks = tasks
                     };
 
