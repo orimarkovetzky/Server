@@ -279,12 +279,16 @@ namespace FlowServer.DBServices
                     DateTime? startTimeEst = reader["startTimeEst"] != DBNull.Value ? Convert.ToDateTime(reader["startTimeEst"]) : (DateTime?)null;
                     int processTime = reader["processTime"] != DBNull.Value ? Convert.ToInt32(reader["processTime"]) : 0;
                     DateTime? start = reader["startTime"] != DBNull.Value ? Convert.ToDateTime(reader["startTime"]) : (DateTime?)null;
+                    int batchId = Convert.ToInt32(reader["batchId"]);
+                    string status = reader["status"].ToString();
 
                     dynamic task = new ExpandoObject();
                     task.Name = productName;
                     task.EstimatedStart = startTimeEst;
                     task.StartTime = start;
                     task.Duration = processTime;
+                    task.BatchId= batchId;
+                    task.Status = status;
 
                     if (!groupedTasks.ContainsKey(machineId))
                         groupedTasks[machineId] = new List<dynamic>();
@@ -305,6 +309,8 @@ namespace FlowServer.DBServices
                 machineInfo.StartTime = taskList.Count > 0 ? taskList[0].StartTime : (DateTime?)null;
                 machineInfo.ProcessTime = taskList.Count > 0 ? taskList[0].Duration : 0;
                 machineInfo.NextProduct = taskList.Count > 1 ? taskList[1].Name : null;
+                machineInfo.CurrentBatchId = taskList.Count > 0 ? taskList[0].BatchId : null;
+                machineInfo.Status = taskList.Count > 0 ? taskList[0].Status : null;
 
                 result.Add(machineInfo);
             }
