@@ -84,6 +84,32 @@ namespace FlowServer.DBServices
             return machines;
         }
 
+        public List<Machine> ReadFunctionalMachines()
+        {
+            List<Machine> machines = new List<Machine>();
+
+            using (SqlConnection con = Connect("igroup16_test1"))
+            using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("GetAllFunctionalMachines", con, null))
+            using (SqlDataReader rdr = cmd.ExecuteReader())
+            {
+                while (rdr.Read())
+                {
+                    Machine m = new Machine
+                    {
+                        MachineId = Convert.ToInt32(rdr["MachineId"]),
+                        MachineName = rdr["MachineName"].ToString(),
+                        ImagePath = rdr["imagePath"].ToString(),
+                        MachineType = Convert.ToInt32(rdr["MachineType"]),
+                        SetupTime = Convert.ToSingle(rdr["SetupTime"]),
+                        Status = Convert.ToInt32(rdr["Status"])
+                    };
+                    machines.Add(m);
+                }
+            }
+
+            return machines;
+        }
+
         public bool AddMachine(string machineName, int machineType, double setupTime, string imagePath = null)
         {
             using (SqlConnection con = Connect("igroup16_test1"))

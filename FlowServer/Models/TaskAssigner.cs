@@ -75,7 +75,8 @@ namespace FlowServer.Models
     TaskDBServices taskService = new TaskDBServices();
 
     // Get all machines
-    List<Machine> machines = machineService.ReadMachines();
+    List<Machine> machines = machineService.ReadFunctionalMachines();
+
 
     // Filter machines by type
     var filteredMachines = machines.Where(m => m.MachineType == machineType).ToList();
