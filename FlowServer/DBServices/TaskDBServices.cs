@@ -9,7 +9,7 @@ namespace FlowServer.DBServices
 {
     public class TaskDBServices
     {
-        public SqlConnection connect(String conString)
+        public SqlConnection Connect(String conString)
         {
 
             // read the connection string from the configuration file
@@ -76,7 +76,7 @@ namespace FlowServer.DBServices
         { "@status", status }
     };
 
-            using (SqlConnection con = connect("igroup16_test1"))
+            using (SqlConnection con = Connect("igroup16_test1"))
             using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("ChangeTaskStatus", con, paramDic))
             {
                 return cmd.ExecuteNonQuery();
@@ -96,7 +96,7 @@ namespace FlowServer.DBServices
         { "@endTimeEst", endTimeEst }
     };
 
-            using (SqlConnection con = connect("igroup16_test1"))
+            using (SqlConnection con = Connect("igroup16_test1"))
             using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("ScheduleTask", con, paramDic))
             {
                 return cmd.ExecuteNonQuery();
@@ -111,7 +111,7 @@ namespace FlowServer.DBServices
         { "@userId", userId }
     };
 
-            using (SqlConnection con = connect("igroup16_test1"))
+            using (SqlConnection con = Connect("igroup16_test1"))
             using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("SPCreateTask", con, paramDic))
             {
                 return cmd.ExecuteNonQuery();
@@ -127,7 +127,7 @@ namespace FlowServer.DBServices
         
     };
 
-            using (SqlConnection con = connect("igroup16_test1"))
+            using (SqlConnection con = Connect("igroup16_test1"))
             using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("UpdateStartTime", con, paramDic))
             {
                 int rowsAffected = cmd.ExecuteNonQuery();
@@ -144,11 +144,65 @@ namespace FlowServer.DBServices
         
     };
 
-            using (SqlConnection con = connect("igroup16_test1"))
+            using (SqlConnection con = Connect("igroup16_test1"))
             using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("UpdateEndTime", con, paramDic))
             {
                 int rowsAffected = cmd.ExecuteNonQuery();
                 return rowsAffected > 0;
+            }
+        }
+
+        public static int[] GetSettings(int productId, int machineType)
+        {
+            using (SqlConnection con = new MachineDBServices().Connect("igroup16_test1"))
+            {
+                using (SqlCommand cmd = new SqlCommand("GetProductSettings", con))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@productId", productId);
+                    cmd.Parameters.AddWithValue("@machineType", machineType);
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            int flow = Convert.ToInt32(reader["flow"]);
+                            int temp = Convert.ToInt32(reader["temperature"]);
+                            return new int[] { flow, temp };
+                        }
+                        else
+                        {
+                            throw new Exception($"No product settings found for product {productId} and machineType {machineType}");
+                        }
+                    }
+                }
+            }
+        }
+
+        public void DeleteTasksByBatch(int batchId)
+        {
+            using (SqlConnection con = Connect("igroup16_test1"))
+            {
+                using (SqlCommand cmd = new SqlCommand("DeleteTasksByBatch", con))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@batchId", batchId);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public void DeletePendingTasksByBatchAndMachine(int batchId, int startingMachineType)
+        {
+            using (SqlConnection con = Connect("igroup16_test1"))
+            {
+                using (SqlCommand cmd = new SqlCommand("DeleteTasksByBatchAndMachine", con))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@batchId", batchId);
+                    cmd.Parameters.AddWithValue("@startingMachineType", startingMachineType);
+                    cmd.ExecuteNonQuery();
+                }
             }
         }
 

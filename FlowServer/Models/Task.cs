@@ -21,6 +21,8 @@ namespace FlowServer.Models
         public int flow {  get; set; }
         public int temp { get; set; } // temperature of the task
 
+        public int grit { get; set; }
+
 
         public Task(int batchId, int machineId, DateTime estStartTime, DateTime estEndTime, DateTime actStartTime, DateTime actEndTime, string status)
         {
@@ -35,7 +37,7 @@ namespace FlowServer.Models
 
         }
 
-        public Task(int batchId, int machineId, DateTime estStartTime, DateTime estEndTime,string status,int processTime)
+        public Task(int batchId, int machineId, DateTime estStartTime, DateTime estEndTime,string status,int processTime, int flow, int temp, int grit)
         {
             this.batchId = batchId;
             this.machineId = machineId;
@@ -43,6 +45,10 @@ namespace FlowServer.Models
             this.endTimeEst = estEndTime;
             this.status = status;
             this.processTime = processTime;
+            this.flow = flow;
+            this.temp = temp;
+            this.grit = grit;
+
         }
        
         public Task() { }

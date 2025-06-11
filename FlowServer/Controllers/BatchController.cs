@@ -72,14 +72,14 @@ namespace FlowServer.Controllers
             try
             {
                 BatchDBServices batchService = new BatchDBServices();
-                Batch batch = batchService.FindBatch(batchId); // <-- convert batchId into Batch object
+                Batch batch = batchService.FindBatch(batchId); 
 
                 if (batch == null)
                 {
                     return NotFound($"Batch with ID {batchId} not found");
                 }
 
-                TaskAssigner.AssignBatchToQueues(batch,userId); // <-- Pass the Batch, not just ID
+                TaskAssigner.AssignBatchToQueues(batch,userId); 
 
                 return Ok($"Batch {batchId} successfully assigned to machines");
             }

@@ -176,10 +176,13 @@ namespace FlowServer.DBServices
                         ? DateTime.MinValue
                         : Convert.ToDateTime(reader["endTimeEst"]);
 
-                    string status = reader["status"].ToString();
+                    string status = reader["taskStatus"].ToString();
                     int processTime= Convert.ToInt32(reader["batchId"]);
+                    int flow = reader["flow"] != DBNull.Value ? Convert.ToInt32(reader["flow"]) : 0;
+                    int temp = reader["temperature"] != DBNull.Value ? Convert.ToInt32(reader["temperature"]) : 0;
+                    int grit = reader["grit"] != DBNull.Value ? Convert.ToInt32(reader["grit"]) : 0;
 
-                    Task task = new Task(batchId, machineId, estStartTime, estEndTime,status,processTime);
+                    Task task = new Task(batchId, machineId, estStartTime, estEndTime,status,processTime,flow,temp,grit);
                     tasks.Add(task);
                 }
             }
@@ -189,17 +192,24 @@ namespace FlowServer.DBServices
         public int UpdateMachineStatus(int machineId, int newStatus)
         {
             var paramDic = new Dictionary<string, object>
-            {
-                { "@id", machineId },
-                { "@status", newStatus }
+    {
+        { "@id", machineId },
+        { "@status", newStatus }
+    };
 
-            };
-
+            int result;
             using (SqlConnection con = Connect("igroup16_test1"))
             using (SqlCommand cmd = CreateCommandWithStoredProcedureGeneral("UpdateMachineStatus", con, paramDic))
             {
-                return cmd.ExecuteNonQuery();
+                result = cmd.ExecuteNonQuery(); // ✅ first, commit to DB
             }
+
+            if (newStatus == 0)
+            {
+                TaskAssigner.HandleMachineFailure(machineId); // ✅ only now reroute safely
+            }
+
+            return result;
         }
 
         public List<MachineCard> GetMachineCards()
@@ -299,10 +309,6 @@ namespace FlowServer.DBServices
             return machineCards;
         }
 
-
-
-
-
         public Machine FindMachine(int machineId)
         {
             var paramDic = new Dictionary<string, object>
@@ -399,6 +405,8 @@ namespace FlowServer.DBServices
 
             return 0;
         }
+
+        
 
     }
 }
