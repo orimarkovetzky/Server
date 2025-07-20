@@ -4,6 +4,7 @@ using FlowServer.Models;
 using FlowServer.DBServices;
 using User = FlowServer.Models.User;
 using System.Reflection.PortableExecutable;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace FlowServer.DBServices
 {
@@ -102,6 +103,28 @@ namespace FlowServer.DBServices
             }
         }
 
+
+        public bool IsUserManager(int userId)
+        {
+            Dictionary<string, object> paramDic = new Dictionary<string, object>
+    {
+        { "@userId", userId }
+    };
+
+            using (SqlConnection con = connect("igroup16_test1"))
+            using (SqlCommand cmd = CreateCommandWithSP("CheckIfUserIsManager", con, paramDic))
+            {
+                // Add OUTPUT parameter manually
+                SqlParameter outputParam = new SqlParameter("@isManager", SqlDbType.Bit)
+                {
+                    Direction = ParameterDirection.Output
+                };
+                cmd.Parameters.Add(outputParam);
+                cmd.ExecuteNonQuery();
+
+                return (bool)(outputParam.Value ?? false); // ✅ return the value
+            }
+        }
     }
 }
 

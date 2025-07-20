@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("FlowServer")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8194b96ee17ff8a97f61d2b4376e6ca7ec8a16e5")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+11232fd0d2e7d9e09b760f3a380f61ffd4f7c5b1")]
 [assembly: System.Reflection.AssemblyProductAttribute("FlowServer")]
 [assembly: System.Reflection.AssemblyTitleAttribute("FlowServer")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

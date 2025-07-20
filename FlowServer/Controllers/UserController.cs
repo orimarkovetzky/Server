@@ -34,4 +34,20 @@ public class UsersController : ControllerBase
             return StatusCode(500, "Error: " + ex.Message);
         }
     }
-}
+
+
+        [HttpGet("isManager/{userId}")]
+        public IActionResult IsManager(int userId)
+        {
+            try
+            {
+                User user = new User { Id = userId };
+                bool isManager = user.CheckManager();
+                return Ok(new { userId, isManager });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error checking manager status", error = ex.Message });
+            }
+        }
+    }

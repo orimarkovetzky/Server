@@ -8,16 +8,18 @@ namespace FlowServer.Models
         public int CustomerId { get; set; }
         public DateTime OrderDate { get; set; }
         public DateTime SupplyDate { get; set; }
+        public string CustomerName { get; set; }
 
         public List<Batch> Batches { get; set; }
         public Order() { }
 
-        public Order(int orderId, int customerId, DateTime orderDate, DateTime supplyDate)
+        public Order(int orderId, int customerId, DateTime orderDate, DateTime supplyDate, string customerName)
         {
             OrderId = orderId;
             CustomerId = customerId;
             OrderDate = orderDate;
             SupplyDate = supplyDate;
+            CustomerName = customerName;
         }
 
         public static List<Order> GetAllOrders()

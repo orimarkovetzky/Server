@@ -71,6 +71,12 @@ namespace FlowServer.Models
             return false;
         }
 
+        public bool CheckManager()
+        {
+            UserDBServices db = new UserDBServices();
+            return db.IsUserManager(this.Id);
+        }
+
         public int GetUserID(string email)
         {
             UserDBServices dbs = new UserDBServices();

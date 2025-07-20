@@ -62,11 +62,12 @@ namespace FlowServer.DBServices
                     int customerId = r.GetInt32(r.GetOrdinal("customerID"));
                     DateTime od = r.GetDateTime(r.GetOrdinal("orderDate"));
                     DateTime sd = r.GetDateTime(r.GetOrdinal("supplyDate"));
+                    string customerName = r.GetString(r.GetOrdinal("customerName"));
 
                     // get or create the Order
                     if (!dict.TryGetValue(orderId, out var order))
                     {
-                        order = new Order(orderId, customerId, od, sd)
+                        order = new Order(orderId, customerId, od, sd,customerName)
                         {
                             Batches = new List<Batch>()
                         };
